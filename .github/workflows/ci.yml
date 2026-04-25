@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  workspace:
+    name: Workspace stable
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          token: ${{ secrets.CARGO_PRIVATE_DEPS_TOKEN }}
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          targets: thumbv7em-none-eabi
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      # Patch overrides resolve git deps to local submodule paths; no
+      # cargo network fetch should happen, but configure cli fetch as a
+      # safety net for any unpatched dep.
+      - name: Configure cargo for private foci-rs deps (fallback)
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.CARGO_PRIVATE_DEPS_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          mkdir -p ~/.cargo
+          printf '[net]\ngit-fetch-with-cli = true\n' >> ~/.cargo/config.toml
+      - name: cargo fmt (workspace)
+        run: cargo fmt --all --check
+      - name: cargo fmt (ankyra workspace)
+        run: cargo fmt --manifest-path ankyra/Cargo.toml --all --check
+      - name: cargo clippy (host members)
+        run: cargo clippy -- -D warnings
+      - name: cargo clippy (embedded board)
+        run: cargo clippy -p openffboard-fw --target thumbv7em-none-eabi -- -D warnings
+      - name: cargo clippy (ankyra workspace)
+        run: cargo clippy --manifest-path ankyra/Cargo.toml --workspace --all-targets -- -D warnings
+      - name: cargo test (host members)
+        run: cargo test
+      - name: cargo test (ankyra workspace)
+        run: cargo test --manifest-path ankyra/Cargo.toml --workspace
+      - name: cargo build (host, release)
+        run: cargo build --release
+      - name: cargo build (embedded board, release)
+        run: cargo build -p openffboard-fw --target thumbv7em-none-eabi --release
