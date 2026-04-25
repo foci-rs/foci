@@ -1,0 +1,21 @@
+[submodule "ankyra"]
+	path = ankyra
+	url = git@github.com:mjonuschat/ankyra.git
+[submodule "shared/foci-tmc4671"]
+	path = shared/foci-tmc4671
+	url = git@github.com:mjonuschat/foci-tmc4671.git
+[submodule "shared/foci-klipper"]
+	path = shared/foci-klipper
+	url = git@github.com:mjonuschat/foci-klipper.git
+[submodule "shared/foci-usb-stm32"]
+	path = shared/foci-usb-stm32
+	url = git@github.com:mjonuschat/foci-usb-stm32.git
+[submodule "shared/foci-firmware"]
+	path = shared/foci-firmware
+	url = git@github.com:mjonuschat/foci-firmware.git
+[submodule "boards/openffboard-fw"]
+	path = boards/openffboard-fw
+	url = git@github.com:mjonuschat/openffboard-fw.git
+[submodule "host/klipper-foci"]
+	path = host/klipper-foci
+	url = git@github.com:mjonuschat/klipper-foci.git

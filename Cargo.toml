@@ -1,0 +1,72 @@
+[workspace]
+resolver = "2"
+members = [
+    "shared/foci-tmc4671",
+    "shared/foci-klipper",
+    "shared/foci-usb-stm32",
+    "shared/foci-firmware",
+    "boards/openffboard-fw",
+]
+# ankyra lives in its own workspace under ankyra/; exclude it so the outer
+# workspace does not try to claim its crates as members.
+exclude = ["ankyra"]
+# Skip the board binary from `cargo build`/`test`/`clippy` without explicit
+# selection; it is `#![no_std]` and needs `--target thumbv7em-none-eabi`.
+default-members = [
+    "shared/foci-tmc4671",
+    "shared/foci-klipper",
+    "shared/foci-usb-stm32",
+    "shared/foci-firmware",
+]
+
+[workspace.package]
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/foci-rs/foci"
+
+[workspace.dependencies]
+defmt = "1.0"
+heapless = { version = "0.9", features = ["defmt"] }
+bitfield-struct = "0.9"
+embedded-hal = "1.0"
+embedded-hal-async = "1.0"
+embassy-sync = "0.6"
+ankyra = { git = "https://github.com/foci-rs/ankyra" }
+ankyra-macros = { git = "https://github.com/foci-rs/ankyra" }
+ankyra-assemble = { git = "https://github.com/foci-rs/ankyra" }
+
+# Patch inter-crate git deps to local submodule paths.
+[patch."https://github.com/foci-rs/ankyra"]
+ankyra = { path = "ankyra/ankyra" }
+ankyra-macros = { path = "ankyra/ankyra-macros" }
+ankyra-assemble = { path = "ankyra/ankyra-assemble" }
+
+[patch."https://github.com/foci-rs/foci-tmc4671"]
+foci-tmc4671 = { path = "shared/foci-tmc4671" }
+
+[patch."https://github.com/foci-rs/foci-klipper"]
+foci-klipper = { path = "shared/foci-klipper" }
+
+[patch."https://github.com/foci-rs/foci-usb-stm32"]
+foci-usb-stm32 = { path = "shared/foci-usb-stm32" }
+
+[patch."https://github.com/foci-rs/foci-firmware"]
+foci-firmware = { path = "shared/foci-firmware" }
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+unused_must_use = "deny"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+cast_possible_truncation = "allow"
+cast_sign_loss = "allow"
+
+[profile.release]
+opt-level = "s"
+debug = 2
+lto = true
