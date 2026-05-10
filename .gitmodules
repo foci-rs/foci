@@ -16,6 +16,12 @@
 [submodule "boards/openffboard-fw"]
 	path = boards/openffboard-fw
 	url = git@github.com:mjonuschat/openffboard-fw.git
+[submodule "boards/ouroboros-fw"]
+	path = boards/ouroboros-fw
+	url = git@github.com:mjonuschat/ouroboros-fw.git
 [submodule "host/klipper-foci"]
 	path = host/klipper-foci
 	url = git@github.com:mjonuschat/klipper-foci.git
+[submodule "host/foci-trace"]
+	path = host/foci-trace
+	url = git@github.com:mjonuschat/foci-trace.git
