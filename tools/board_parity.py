@@ -7,12 +7,18 @@ or constant surface diverges outside the hardware-topology allowlist.
 
 from __future__ import annotations
 
+import argparse
 import json
+import sys
 from pathlib import Path
 
 from elftools.elf.elffile import ELFFile
 
 DICT_MARKER = b'{"commands":'
+
+# Default release ELF locations, relative to the foci workspace root.
+DEFAULT_OPENFFBOARD_ELF = "target/thumbv7em-none-eabi/release/openffboard-fw"
+DEFAULT_OUROBOROS_ELF = "target/thumbv7em-none-eabihf/release/ouroboros-fw"
 
 
 # Constants whose VALUE may differ between boards (hardware topology). Their
@@ -158,3 +164,52 @@ def extract_dictionary(elf_path: Path) -> dict:
                     except ValueError:
                         continue
     raise ValueError(f"no data dictionary found in {elf_path}")
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the parity gate. Returns the process exit code."""
+    parser = argparse.ArgumentParser(description="Board command/reply parity gate.")
+    parser.add_argument(
+        "--openffboard",
+        type=Path,
+        default=Path(DEFAULT_OPENFFBOARD_ELF),
+        help="path to the OpenFFBoard release ELF",
+    )
+    parser.add_argument(
+        "--ouroboros",
+        type=Path,
+        default=Path(DEFAULT_OUROBOROS_ELF),
+        help="path to the Ouroboros release ELF",
+    )
+    args = parser.parse_args(argv)
+
+    for label, path in (
+        ("OpenFFBoard", args.openffboard),
+        ("Ouroboros", args.ouroboros),
+    ):
+        if not path.is_file():
+            print(
+                f"error: {label} ELF not found at {path}\n"
+                "build both board firmwares first:\n"
+                "  cargo build -p openffboard-fw --release --target thumbv7em-none-eabi\n"
+                "  cargo build -p ouroboros-fw --release --target thumbv7em-none-eabihf",
+                file=sys.stderr,
+            )
+            return 2
+
+    openffboard = extract_dictionary(args.openffboard)
+    ouroboros = extract_dictionary(args.ouroboros)
+    problems = compare_dictionaries(openffboard, ouroboros)
+
+    if problems:
+        print("Board parity gate FAILED:", file=sys.stderr)
+        for problem in problems:
+            print(f"  - {problem}", file=sys.stderr)
+        return 1
+
+    print("Board parity gate passed: OpenFFBoard and Ouroboros surfaces match.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -65,8 +65,12 @@ def test_compare_identical_surfaces_has_no_problems():
 
 
 def test_compare_allows_hardware_constant_value_differences():
-    off = _dict(config={"CLOCK_FREQ": 84000000, "MCU": "stm32f407", "RECEIVE_WINDOW": 192})
-    our = _dict(config={"CLOCK_FREQ": 260000000, "MCU": "stm32h723", "RECEIVE_WINDOW": 192})
+    off = _dict(
+        config={"CLOCK_FREQ": 84000000, "MCU": "stm32f407", "RECEIVE_WINDOW": 192}
+    )
+    our = _dict(
+        config={"CLOCK_FREQ": 260000000, "MCU": "stm32h723", "RECEIVE_WINDOW": 192}
+    )
     assert board_parity.compare_dictionaries(off, our) == []
 
 
@@ -84,8 +88,12 @@ def test_compare_flags_command_only_on_one_board():
 
 
 def test_compare_flags_non_allowlisted_constant_value_difference():
-    off = _dict(config={"CLOCK_FREQ": 84000000, "MCU": "stm32f407", "RECEIVE_WINDOW": 192})
-    our = _dict(config={"CLOCK_FREQ": 84000000, "MCU": "stm32f407", "RECEIVE_WINDOW": 256})
+    off = _dict(
+        config={"CLOCK_FREQ": 84000000, "MCU": "stm32f407", "RECEIVE_WINDOW": 192}
+    )
+    our = _dict(
+        config={"CLOCK_FREQ": 84000000, "MCU": "stm32f407", "RECEIVE_WINDOW": 256}
+    )
     problems = board_parity.compare_dictionaries(off, our)
     assert any("RECEIVE_WINDOW" in p for p in problems)
 
@@ -106,3 +114,44 @@ def test_extract_dictionary_missing_file_raises(tmp_path):
     missing = tmp_path / "nope.elf"
     with pytest.raises(FileNotFoundError):
         board_parity.extract_dictionary(missing)
+
+
+def test_main_missing_elf_reports_build_first(tmp_path, capsys):
+    code = board_parity.main(
+        [
+            "--openffboard",
+            str(tmp_path / "a.elf"),
+            "--ouroboros",
+            str(tmp_path / "b.elf"),
+        ]
+    )
+    assert code == 2
+    assert "build both board firmwares first" in capsys.readouterr().err
+
+
+def test_main_passes_when_surfaces_match(tmp_path, monkeypatch, capsys):
+    off = tmp_path / "off.elf"
+    our = tmp_path / "our.elf"
+    off.write_bytes(b"stub")
+    our.write_bytes(b"stub")
+    monkeypatch.setattr(board_parity, "extract_dictionary", lambda path: _dict())
+    code = board_parity.main(["--openffboard", str(off), "--ouroboros", str(our)])
+    assert code == 0
+    assert "passed" in capsys.readouterr().out
+
+
+def test_main_fails_when_surfaces_differ(tmp_path, monkeypatch, capsys):
+    off = tmp_path / "off.elf"
+    our = tmp_path / "our.elf"
+    off.write_bytes(b"stub")
+    our.write_bytes(b"stub")
+
+    def fake_extract(path):
+        if path.name == "our.elf":
+            return _dict(commands={"extra_cmd oid=%c": 9})
+        return _dict()
+
+    monkeypatch.setattr(board_parity, "extract_dictionary", fake_extract)
+    code = board_parity.main(["--openffboard", str(off), "--ouroboros", str(our)])
+    assert code == 1
+    assert "FAILED" in capsys.readouterr().err
