@@ -37,6 +37,15 @@ def test_find_dictionary_json_skips_marker_lookalikes():
     assert result["responses"] == {"identify_response offset=%u data=%.*s": 0}
 
 
+def test_find_dictionary_json_skips_lookalike_with_all_keys_but_wrong_types():
+    # A marker lookalike that has commands/responses/config keys but whose
+    # commands is a string, not an object. The real dictionary follows it.
+    decoy = b'{"commands":"x","responses":{},"config":{}}'
+    blob = b"junk" + decoy + b"more" + _dict_json()
+    result = board_parity.find_dictionary_json(blob)
+    assert result["responses"] == {"identify_response offset=%u data=%.*s": 0}
+
+
 def test_find_dictionary_json_raises_when_absent():
     with pytest.raises(ValueError, match="no data dictionary"):
         board_parity.find_dictionary_json(b"no dictionary here")
@@ -155,3 +164,20 @@ def test_main_fails_when_surfaces_differ(tmp_path, monkeypatch, capsys):
     code = board_parity.main(["--openffboard", str(off), "--ouroboros", str(our)])
     assert code == 1
     assert "FAILED" in capsys.readouterr().err
+
+
+def test_main_dictless_elf_reports_error(tmp_path, monkeypatch, capsys):
+    # The ELF exists but carries no dictionary (e.g. a stale build). main
+    # should exit non-zero with a clean message, not a raw traceback.
+    off = tmp_path / "off.elf"
+    our = tmp_path / "our.elf"
+    off.write_bytes(b"stub")
+    our.write_bytes(b"stub")
+
+    def raise_no_dict(path):
+        raise ValueError(f"no data dictionary found in {path}")
+
+    monkeypatch.setattr(board_parity, "extract_dictionary", raise_no_dict)
+    code = board_parity.main(["--openffboard", str(off), "--ouroboros", str(our)])
+    assert code == 2
+    assert "no data dictionary" in capsys.readouterr().err

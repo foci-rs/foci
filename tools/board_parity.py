@@ -119,8 +119,16 @@ def find_dictionary_json(blob: bytes) -> dict:
     """Locate and parse the uncompressed dictionary JSON in a byte blob.
 
     Scans for the dictionary's opening marker, decodes one JSON object from
-    that offset, and accepts it only if it carries the expected top-level
-    sections. Raises ``ValueError`` if no valid dictionary object is present.
+    that offset, and accepts it only if its expected top-level sections are
+    present and are themselves objects. Raises ``ValueError`` if no valid
+    dictionary object is present.
+
+    The remainder of a read-only section continues past the dictionary with
+    arbitrary binary, so the slice is decoded with ``errors="replace"``;
+    ``raw_decode`` stops at the end of the JSON object and never reads the
+    replaced tail. The real dictionary is ASCII, so no replacement character
+    can land inside it. The section-type checks below reject a marker
+    lookalike whose ``commands`` is, say, a string rather than an object.
     """
     decoder = json.JSONDecoder()
     start = 0
@@ -134,7 +142,12 @@ def find_dictionary_json(blob: bytes) -> dict:
         except json.JSONDecodeError:
             start = index + 1
             continue
-        if isinstance(obj, dict) and {"commands", "responses", "config"} <= obj.keys():
+        if (
+            isinstance(obj, dict)
+            and isinstance(obj.get("commands"), dict)
+            and isinstance(obj.get("responses"), dict)
+            and isinstance(obj.get("config"), dict)
+        ):
             return obj
         start = index + 1
 
@@ -197,8 +210,19 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 2
 
-    openffboard = extract_dictionary(args.openffboard)
-    ouroboros = extract_dictionary(args.ouroboros)
+    try:
+        openffboard = extract_dictionary(args.openffboard)
+        ouroboros = extract_dictionary(args.ouroboros)
+    except ValueError as exc:
+        print(
+            f"error: {exc}\n"
+            "the ELF carries no data dictionary; rebuild both board firmwares:\n"
+            "  cargo build -p openffboard-fw --release --target thumbv7em-none-eabi\n"
+            "  cargo build -p ouroboros-fw --release --target thumbv7em-none-eabihf",
+            file=sys.stderr,
+        )
+        return 2
+
     problems = compare_dictionaries(openffboard, ouroboros)
 
     if problems:
