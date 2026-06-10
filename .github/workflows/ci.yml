@@ -24,7 +24,7 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
-          targets: thumbv7em-none-eabi
+          targets: thumbv7em-none-eabi, thumbv7em-none-eabihf
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
       # Patch overrides resolve git deps to local submodule paths; no
@@ -41,8 +41,10 @@ jobs:
         run: cargo fmt --manifest-path ankyra/Cargo.toml --all --check
       - name: cargo clippy (host members)
         run: cargo clippy -- -D warnings
-      - name: cargo clippy (embedded board)
+      - name: cargo clippy (openffboard board)
         run: cargo clippy -p openffboard-fw --target thumbv7em-none-eabi -- -D warnings
+      - name: cargo clippy (ouroboros board)
+        run: cargo clippy -p ouroboros-fw --target thumbv7em-none-eabihf -- -D warnings
       - name: cargo clippy (ankyra workspace)
         run: cargo clippy --manifest-path ankyra/Cargo.toml --workspace --all-targets -- -D warnings
       - name: cargo test (host members)
@@ -51,5 +53,15 @@ jobs:
         run: cargo test --manifest-path ankyra/Cargo.toml --workspace
       - name: cargo build (host, release)
         run: cargo build --release
-      - name: cargo build (embedded board, release)
+      - name: cargo build (openffboard board, release)
         run: cargo build -p openffboard-fw --target thumbv7em-none-eabi --release
+      - name: cargo build (ouroboros board, release)
+        run: cargo build -p ouroboros-fw --target thumbv7em-none-eabihf --release
+      - name: Set up Python for board parity gate
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install board parity gate deps
+        run: pip install -r tools/requirements.txt
+      - name: Board command/reply parity gate
+        run: python tools/board_parity.py
