@@ -8,6 +8,9 @@ or constant surface diverges outside the hardware-topology allowlist.
 from __future__ import annotations
 
 import json
+from pathlib import Path
+
+from elftools.elf.elffile import ELFFile
 
 DICT_MARKER = b'{"commands":'
 
@@ -128,3 +131,30 @@ def find_dictionary_json(blob: bytes) -> dict:
         if isinstance(obj, dict) and {"commands", "responses", "config"} <= obj.keys():
             return obj
         start = index + 1
+
+
+# ELF section header flags (see the ELF spec).
+_SHF_WRITE = 0x1
+_SHF_ALLOC = 0x2
+
+
+def extract_dictionary(elf_path: Path) -> dict:
+    """Extract the data dictionary JSON from a firmware ELF.
+
+    The dictionary is a ``pub const`` string with no stable symbol, so it is
+    located by content within the ELF's allocated, non-writable sections.
+    Raises ``FileNotFoundError`` if the ELF is missing and ``ValueError`` if no
+    dictionary is found.
+    """
+    with elf_path.open("rb") as handle:
+        elf = ELFFile(handle)
+        for section in elf.iter_sections():
+            flags = section["sh_flags"]
+            if (flags & _SHF_ALLOC) and not (flags & _SHF_WRITE):
+                data = section.data()
+                if DICT_MARKER in data:
+                    try:
+                        return find_dictionary_json(data)
+                    except ValueError:
+                        continue
+    raise ValueError(f"no data dictionary found in {elf_path}")

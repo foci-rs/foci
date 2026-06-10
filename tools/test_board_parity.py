@@ -100,3 +100,9 @@ def test_compare_flags_non_allowlisted_enumeration_content_difference():
 def test_compare_flags_metadata_difference():
     problems = board_parity.compare_dictionaries(_dict(), _dict(license="GPL"))
     assert any("license" in p for p in problems)
+
+
+def test_extract_dictionary_missing_file_raises(tmp_path):
+    missing = tmp_path / "nope.elf"
+    with pytest.raises(FileNotFoundError):
+        board_parity.extract_dictionary(missing)
