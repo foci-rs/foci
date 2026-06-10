@@ -13,7 +13,7 @@ def _dict_json(**overrides) -> bytes:
         "responses": {"identify_response offset=%u data=%.*s": 0},
         "output": {},
         "config": {"CLOCK_FREQ": 84000000, "MCU": "stm32f407"},
-        "enumerations": {"pins": {"PA0": 0}},
+        "enumerations": {"pin": {"PA0": 0}},
         "app": "foci",
         "version": "0.1.0",
         "build_versions": "",
@@ -61,7 +61,7 @@ def _dict(**overrides) -> dict:
             "MCU": "stm32f407",
             "RECEIVE_WINDOW": 192,
         },
-        "enumerations": {"pins": {"PA0": 0}},
+        "enumerations": {"pin": {"PA0": 0}},
         "app": "foci",
         "license": "MIT OR Apache-2.0",
     }
@@ -83,9 +83,9 @@ def test_compare_allows_hardware_constant_value_differences():
     assert board_parity.compare_dictionaries(off, our) == []
 
 
-def test_compare_allows_pins_enumeration_content_difference():
-    off = _dict(enumerations={"pins": {"PA0": 0}})
-    our = _dict(enumerations={"pins": {"PB7": 12}})
+def test_compare_allows_pin_enumeration_content_difference():
+    off = _dict(enumerations={"pin": {"PA0": 0}})
+    our = _dict(enumerations={"pin": {"PB7": 12}})
     assert board_parity.compare_dictionaries(off, our) == []
 
 
@@ -108,8 +108,8 @@ def test_compare_flags_non_allowlisted_constant_value_difference():
 
 
 def test_compare_flags_non_allowlisted_enumeration_content_difference():
-    off = _dict(enumerations={"pins": {"PA0": 0}, "motor_kind": {"stepper": 2}})
-    our = _dict(enumerations={"pins": {"PA0": 0}, "motor_kind": {"stepper": 3}})
+    off = _dict(enumerations={"pin": {"PA0": 0}, "motor_kind": {"stepper": 2}})
+    our = _dict(enumerations={"pin": {"PA0": 0}, "motor_kind": {"stepper": 3}})
     problems = board_parity.compare_dictionaries(off, our)
     assert any("motor_kind" in p for p in problems)
 

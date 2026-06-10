@@ -38,10 +38,13 @@ ALLOWED_CONSTANT_VALUE_DIFFERENCES = frozenset(
 )
 
 # Enumerations whose CONTENT may differ between boards (hardware topology). The
-# name must still be present in both dictionaries. The dictionary emits
-# enumeration names in snake_case; the exact "pins" key is confirmed against a
-# real build in Task 5.
-ALLOWED_ENUM_CONTENT_DIFFERENCES = frozenset({"pins"})
+# name must still be present in both dictionaries. The dictionary emits the pin
+# enumeration as "pin" (singular); its members are board-specific physical pins,
+# and Ouroboros additionally carries a second stepper channel (DIR1/ENA1/STEP1),
+# a channel-count-derived difference. Verified against real builds of both
+# boards. The "static_string_id" enumeration is intentionally NOT listed: it is
+# identical across boards and must stay that way.
+ALLOWED_ENUM_CONTENT_DIFFERENCES = frozenset({"pin"})
 
 
 def _compare_key_sets(kind: str, off: dict, our: dict) -> list[str]:
