@@ -17,6 +17,9 @@ DIAGNOSTIC_REPLY_TYPES = [
     "FociCurrentTorqueSampleResult",
     "FociCurrentTorqueSampleDetailResult",
     "FociVoltageStepResult",
+    "FociImpedanceProfile",
+    "FociImpedanceFit",
+    "FociImpedanceRun",
 ]
 
 
