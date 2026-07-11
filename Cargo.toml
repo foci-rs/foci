@@ -6,7 +6,9 @@ members = [
     "shared/foci-usb-stm32",
     "shared/foci-firmware",
     "boards/openffboard-fw",
+    "boards/openffboard-fw/host-tests",
     "boards/ouroboros-fw",
+    "boards/ouroboros-fw/host-tests",
 ]
 # ankyra lives in its own workspace under ankyra/; exclude it so the outer
 # workspace does not try to claim its crates as members.

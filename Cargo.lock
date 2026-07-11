@@ -615,6 +615,7 @@ dependencies = [
  "ankyra",
  "ankyra-macros",
  "cortex-m",
+ "critical-section",
  "defmt 1.0.1",
  "embassy-sync 0.6.2",
  "embedded-hal 1.0.0",
@@ -964,6 +965,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "openffboard-host-tests"
+version = "0.1.0"
+dependencies = [
+ "foci-firmware",
+ "foci-klipper",
+ "heapless 0.9.2",
+]
+
+[[package]]
 name = "ouroboros-fw"
 version = "0.1.0"
 dependencies = [
@@ -990,6 +1000,15 @@ dependencies = [
  "rtic",
  "rtic-monotonics",
  "rtic-sync",
+]
+
+[[package]]
+name = "ouroboros-host-tests"
+version = "0.1.0"
+dependencies = [
+ "foci-firmware",
+ "foci-klipper",
+ "heapless 0.9.2",
 ]
 
 [[package]]
