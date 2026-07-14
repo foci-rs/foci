@@ -73,9 +73,3 @@ cast_sign_loss = "allow"
 opt-level = "s"
 debug = 2
 lto = true
-
-[profile.release.package.foci-firmware]
-opt-level = 3
-
-[profile.release.package.openffboard-fw]
-opt-level = 3
