@@ -63,6 +63,8 @@ ALLOWED_CONSTANT_VALUE_DIFFERENCES = frozenset(
 # identical across boards and must stay that way.
 ALLOWED_ENUM_CONTENT_DIFFERENCES = frozenset({"pin"})
 
+REQUIRED_STATIC_STRINGS = frozenset({"TMC current limit invalid"})
+
 
 def _compare_key_sets(kind: str, off: dict, our: dict) -> list[str]:
     problems = []
@@ -94,6 +96,14 @@ def _compare_enumerations(off: dict, our: dict) -> list[str]:
         if off[name] != our[name]:
             problems.append(f"enumeration {name!r} content differs")
     return problems
+
+
+def _check_required_static_strings(board: str, enumerations: dict) -> list[str]:
+    static_strings = enumerations.get("static_string_id", {})
+    return [
+        f"required static string missing on {board}: {message!r}"
+        for message in sorted(REQUIRED_STATIC_STRINGS - set(static_strings))
+    ]
 
 
 def _compare_metadata(off: dict, our: dict) -> list[str]:
@@ -130,6 +140,12 @@ def compare_dictionaries(openffboard: dict, ouroboros: dict) -> list[str]:
     )
     problems += _compare_enumerations(
         openffboard.get("enumerations", {}), ouroboros.get("enumerations", {})
+    )
+    problems += _check_required_static_strings(
+        "OpenFFBoard", openffboard.get("enumerations", {})
+    )
+    problems += _check_required_static_strings(
+        "Ouroboros", ouroboros.get("enumerations", {})
     )
     problems += _compare_metadata(openffboard, ouroboros)
     return problems

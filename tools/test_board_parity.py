@@ -13,7 +13,10 @@ def _dict_json(**overrides) -> bytes:
         "responses": {"identify_response offset=%u data=%.*s": 0},
         "output": {},
         "config": {"CLOCK_FREQ": 84000000, "MCU": "stm32f407"},
-        "enumerations": {"pin": {"PA0": 0}},
+        "enumerations": {
+            "pin": {"PA0": 0},
+            "static_string_id": {"TMC current limit invalid": 1},
+        },
         "app": "foci",
         "version": "0.1.0",
         "build_versions": "",
@@ -61,7 +64,10 @@ def _dict(**overrides) -> dict:
             "MCU": "stm32f407",
             "RECEIVE_WINDOW": 192,
         },
-        "enumerations": {"pin": {"PA0": 0}},
+        "enumerations": {
+            "pin": {"PA0": 0},
+            "static_string_id": {"TMC current limit invalid": 1},
+        },
         "app": "foci",
         "license": "MIT OR Apache-2.0",
     }
@@ -84,8 +90,9 @@ def test_compare_allows_hardware_constant_value_differences():
 
 
 def test_compare_allows_pin_enumeration_content_difference():
-    off = _dict(enumerations={"pin": {"PA0": 0}})
-    our = _dict(enumerations={"pin": {"PB7": 12}})
+    static_strings = {"TMC current limit invalid": 1}
+    off = _dict(enumerations={"pin": {"PA0": 0}, "static_string_id": static_strings})
+    our = _dict(enumerations={"pin": {"PB7": 12}, "static_string_id": static_strings})
     assert board_parity.compare_dictionaries(off, our) == []
 
 
@@ -108,10 +115,34 @@ def test_compare_flags_non_allowlisted_constant_value_difference():
 
 
 def test_compare_flags_non_allowlisted_enumeration_content_difference():
-    off = _dict(enumerations={"pin": {"PA0": 0}, "motor_kind": {"stepper": 2}})
-    our = _dict(enumerations={"pin": {"PA0": 0}, "motor_kind": {"stepper": 3}})
+    static_strings = {"TMC current limit invalid": 1}
+    off = _dict(
+        enumerations={
+            "pin": {"PA0": 0},
+            "static_string_id": static_strings,
+            "motor_kind": {"stepper": 2},
+        }
+    )
+    our = _dict(
+        enumerations={
+            "pin": {"PA0": 0},
+            "static_string_id": static_strings,
+            "motor_kind": {"stepper": 3},
+        }
+    )
     problems = board_parity.compare_dictionaries(off, our)
     assert any("motor_kind" in p for p in problems)
+
+
+def test_compare_requires_current_limit_shutdown_on_both_boards():
+    missing = _dict(enumerations={"pin": {"PA0": 0}, "static_string_id": {}})
+
+    problems = board_parity.compare_dictionaries(missing, missing)
+
+    assert problems == [
+        "required static string missing on OpenFFBoard: 'TMC current limit invalid'",
+        "required static string missing on Ouroboros: 'TMC current limit invalid'",
+    ]
 
 
 def test_compare_flags_metadata_difference():
