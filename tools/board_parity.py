@@ -1,14 +1,17 @@
-"""Board command/reply parity gate.
+"""Board protocol and runtime-safety parity gate.
 
 Compares the generated Klipper data dictionaries embedded in the OpenFFBoard
 and Ouroboros firmware ELFs and fails when their command, reply, enumeration,
-or constant surface diverges outside the hardware-topology allowlist.
+or constant surface diverges outside the hardware-topology allowlist. It also
+checks the RTIC task priorities that isolate watchdog service from sustained
+commissioning work.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -19,6 +22,20 @@ DICT_MARKER = b'{"commands":'
 # Default release ELF locations, relative to the foci workspace root.
 DEFAULT_OPENFFBOARD_ELF = "target/thumbv7em-none-eabi/release/openffboard-fw"
 DEFAULT_OUROBOROS_ELF = "target/thumbv7em-none-eabihf/release/ouroboros-fw"
+DEFAULT_OPENFFBOARD_SOURCE = "boards/openffboard-fw/src/main.rs"
+DEFAULT_OUROBOROS_SOURCE = "boards/ouroboros-fw/src/main.rs"
+
+REQUIRED_RTIC_TASK_PRIORITIES = {
+    "tmc_control": 1,
+    "stats": 1,
+    "watchdog": 2,
+}
+
+_RTIC_TASK_RE = re.compile(
+    r"#\[task\((?P<args>.*?)\)\]\s*async\s+fn\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)",
+    re.DOTALL,
+)
+_RTIC_PRIORITY_RE = re.compile(r"\bpriority\s*=\s*(?P<priority>\d+)\b")
 
 
 # Constants whose VALUE may differ between boards (hardware topology). Their
@@ -118,6 +135,36 @@ def compare_dictionaries(openffboard: dict, ouroboros: dict) -> list[str]:
     return problems
 
 
+def _extract_rtic_task_priorities(source: str) -> dict[str, int]:
+    priorities = {}
+    for task_match in _RTIC_TASK_RE.finditer(source):
+        priority_match = _RTIC_PRIORITY_RE.search(task_match.group("args"))
+        if priority_match is not None:
+            priorities[task_match.group("name")] = int(priority_match.group("priority"))
+    return priorities
+
+
+def compare_runtime_task_priorities(
+    openffboard_source: str, ouroboros_source: str
+) -> list[str]:
+    """Return messages for missing or unsafe RTIC task priorities."""
+    problems = []
+    for board, source in (
+        ("OpenFFBoard", openffboard_source),
+        ("Ouroboros", ouroboros_source),
+    ):
+        priorities = _extract_rtic_task_priorities(source)
+        for task, expected in REQUIRED_RTIC_TASK_PRIORITIES.items():
+            actual = priorities.get(task)
+            if actual is None:
+                problems.append(f"{board} RTIC task {task!r} has no explicit priority")
+            elif actual != expected:
+                problems.append(
+                    f"{board} RTIC task {task!r} priority is {actual}, expected {expected}"
+                )
+    return problems
+
+
 def find_dictionary_json(blob: bytes) -> dict:
     """Locate and parse the uncompressed dictionary JSON in a byte blob.
 
@@ -197,6 +244,18 @@ def main(argv: list[str] | None = None) -> int:
         default=Path(DEFAULT_OUROBOROS_ELF),
         help="path to the Ouroboros release ELF",
     )
+    parser.add_argument(
+        "--openffboard-source",
+        type=Path,
+        default=Path(DEFAULT_OPENFFBOARD_SOURCE),
+        help="path to the OpenFFBoard RTIC application source",
+    )
+    parser.add_argument(
+        "--ouroboros-source",
+        type=Path,
+        default=Path(DEFAULT_OUROBOROS_SOURCE),
+        help="path to the Ouroboros RTIC application source",
+    )
     args = parser.parse_args(argv)
 
     for label, path in (
@@ -213,6 +272,14 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 2
 
+    for label, path in (
+        ("OpenFFBoard", args.openffboard_source),
+        ("Ouroboros", args.ouroboros_source),
+    ):
+        if not path.is_file():
+            print(f"error: {label} source not found at {path}", file=sys.stderr)
+            return 2
+
     try:
         openffboard = extract_dictionary(args.openffboard)
         ouroboros = extract_dictionary(args.ouroboros)
@@ -227,6 +294,9 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     problems = compare_dictionaries(openffboard, ouroboros)
+    problems += compare_runtime_task_priorities(
+        args.openffboard_source.read_text(), args.ouroboros_source.read_text()
+    )
 
     if problems:
         print("Board parity gate FAILED:", file=sys.stderr)
@@ -234,7 +304,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  - {problem}", file=sys.stderr)
         return 1
 
-    print("Board parity gate passed: OpenFFBoard and Ouroboros surfaces match.")
+    print("Board parity gate passed: protocol surfaces and RTIC priorities match.")
     return 0
 
 

@@ -119,6 +119,32 @@ def test_compare_flags_metadata_difference():
     assert any("license" in p for p in problems)
 
 
+def _runtime_source(*, tmc_priority=1, stats_priority=1, watchdog_priority=2):
+    return f"""
+    #[task(priority = {tmc_priority})]
+    async fn tmc_control(_ctx: tmc_control::Context) {{}}
+
+    #[task(priority = {stats_priority})]
+    async fn stats(_ctx: stats::Context) {{}}
+
+    #[task(priority = {watchdog_priority}, local = [wdg])]
+    async fn watchdog(_ctx: watchdog::Context) {{}}
+    """
+
+
+def test_compare_runtime_priorities_accepts_watchdog_above_commissioning():
+    source = _runtime_source()
+    assert board_parity.compare_runtime_task_priorities(source, source) == []
+
+
+def test_compare_runtime_priorities_rejects_watchdog_at_commissioning_priority():
+    openffboard = _runtime_source(watchdog_priority=1)
+    problems = board_parity.compare_runtime_task_priorities(
+        openffboard, _runtime_source()
+    )
+    assert problems == ["OpenFFBoard RTIC task 'watchdog' priority is 1, expected 2"]
+
+
 def test_extract_dictionary_missing_file_raises(tmp_path):
     missing = tmp_path / "nope.elf"
     with pytest.raises(FileNotFoundError):
@@ -164,6 +190,34 @@ def test_main_fails_when_surfaces_differ(tmp_path, monkeypatch, capsys):
     code = board_parity.main(["--openffboard", str(off), "--ouroboros", str(our)])
     assert code == 1
     assert "FAILED" in capsys.readouterr().err
+
+
+def test_main_fails_when_runtime_task_priority_is_unsafe(tmp_path, monkeypatch, capsys):
+    off = tmp_path / "off.elf"
+    our = tmp_path / "our.elf"
+    off_source = tmp_path / "openffboard.rs"
+    our_source = tmp_path / "ouroboros.rs"
+    off.write_bytes(b"stub")
+    our.write_bytes(b"stub")
+    off_source.write_text(_runtime_source(watchdog_priority=1))
+    our_source.write_text(_runtime_source())
+    monkeypatch.setattr(board_parity, "extract_dictionary", lambda path: _dict())
+
+    code = board_parity.main(
+        [
+            "--openffboard",
+            str(off),
+            "--ouroboros",
+            str(our),
+            "--openffboard-source",
+            str(off_source),
+            "--ouroboros-source",
+            str(our_source),
+        ]
+    )
+
+    assert code == 1
+    assert "watchdog" in capsys.readouterr().err
 
 
 def test_main_dictless_elf_reports_error(tmp_path, monkeypatch, capsys):
