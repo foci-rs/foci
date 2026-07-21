@@ -25,7 +25,7 @@ jobs:
         with:
           toolchain: stable
           targets: thumbv7em-none-eabi, thumbv7em-none-eabihf
-          components: clippy, rustfmt
+          components: clippy, rustfmt, llvm-tools-preview
       - uses: Swatinem/rust-cache@v2
       # Patch overrides resolve git deps to local submodule paths; no
       # cargo network fetch should happen, but configure cli fetch as a
@@ -65,3 +65,5 @@ jobs:
         run: pip install -r tools/requirements.txt
       - name: Board command/reply parity gate
         run: python tools/board_parity.py
+      - name: OpenFFBoard commissioning stack-frame gate
+        run: python tools/stack_frame_gate.py
