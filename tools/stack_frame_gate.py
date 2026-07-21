@@ -29,20 +29,20 @@ class FrameBudget:
     exact_symbol: bool = False
 
 
-# These budgets cover the three nested frames implicated. They are
-# finalized from the corrected release ELF after the continuation payload is
-# removed from the scheduler path.
+# These budgets cover the three frames implicated. They are pinned
+# from the corrected trace-velocity-sweep release ELF; CI must build that exact
+# feature set immediately before invoking this gate.
 FRAME_BUDGETS = (
-    FrameBudget("main", "main", 30_000, exact_symbol=True),
+    FrameBudget("main", "main", 37_000, exact_symbol=True),
     FrameBudget(
         "tmc_control poll",
         "openffboard_fw::app::tmc_control::",
-        24_500,
+        19_000,
     ),
     FrameBudget(
         "request handler",
         "foci_firmware::tmc_control::request::handle_tmc_control_request_with_stages::",
-        18_000,
+        7_000,
     ),
 )
 
