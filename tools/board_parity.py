@@ -54,6 +54,12 @@ ALLOWED_CONSTANT_VALUE_DIFFERENCES = frozenset(
     }
 )
 
+# Capability differences are not generic board topology. Each value is pinned
+# so either board changing its evidence authority fails parity review.
+EXPECTED_CONSTANT_VALUE_DIFFERENCES = {
+    "VELOCITY_LIMIT_EVIDENCE_CAPABILITY": (1, 0),
+}
+
 # Enumerations whose CONTENT may differ between boards (hardware topology). The
 # name must still be present in both dictionaries. The dictionary emits the pin
 # enumeration as "pin" (singular); its members are board-specific physical pins,
@@ -79,6 +85,16 @@ def _compare_config(off: dict, our: dict) -> list[str]:
     problems = _compare_key_sets("constant", off, our)
     for name in sorted(set(off) & set(our)):
         if name in ALLOWED_CONSTANT_VALUE_DIFFERENCES:
+            continue
+        expected = EXPECTED_CONSTANT_VALUE_DIFFERENCES.get(name)
+        if expected is not None:
+            actual = (off[name], our[name])
+            if actual != expected:
+                problems.append(
+                    f"constant {name!r} expected "
+                    f"OpenFFBoard={expected[0]!r} Ouroboros={expected[1]!r}, got "
+                    f"OpenFFBoard={actual[0]!r} Ouroboros={actual[1]!r}"
+                )
             continue
         if off[name] != our[name]:
             problems.append(

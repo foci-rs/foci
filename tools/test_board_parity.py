@@ -89,6 +89,34 @@ def test_compare_allows_hardware_constant_value_differences():
     assert board_parity.compare_dictionaries(off, our) == []
 
 
+def test_compare_requires_expected_velocity_limit_capabilities():
+    off = _dict(
+        config={
+            "CLOCK_FREQ": 84000000,
+            "MCU": "stm32f407",
+            "RECEIVE_WINDOW": 192,
+            "VELOCITY_LIMIT_EVIDENCE_CAPABILITY": 1,
+        }
+    )
+    our = _dict(
+        config={
+            "CLOCK_FREQ": 260000000,
+            "MCU": "stm32h723",
+            "RECEIVE_WINDOW": 192,
+            "VELOCITY_LIMIT_EVIDENCE_CAPABILITY": 0,
+        }
+    )
+
+    assert board_parity.compare_dictionaries(off, our) == []
+
+    our["config"]["VELOCITY_LIMIT_EVIDENCE_CAPABILITY"] = 1
+    problems = board_parity.compare_dictionaries(off, our)
+    assert problems == [
+        "constant 'VELOCITY_LIMIT_EVIDENCE_CAPABILITY' expected "
+        "OpenFFBoard=1 Ouroboros=0, got OpenFFBoard=1 Ouroboros=1"
+    ]
+
+
 def test_compare_allows_pin_enumeration_content_difference():
     static_strings = {"TMC current limit invalid": 1}
     off = _dict(enumerations={"pin": {"PA0": 0}, "static_string_id": static_strings})
