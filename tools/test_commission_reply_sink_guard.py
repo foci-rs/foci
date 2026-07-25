@@ -8,13 +8,13 @@ BOARD_REPLY_FILES = [
     Path("boards/openffboard-fw/src/ankyra/replies.rs"),
     Path("boards/ouroboros-fw/src/ankyra/replies.rs"),
 ]
-STAGE_B_V3_FORWARDERS = {
-    "foci_velocity_stage_b_reproduction_v3_core",
-    "foci_velocity_stage_b_reproduction_v3_membership",
-    "foci_velocity_stage_b_reproduction_v3_pooled",
-    "foci_velocity_stage_b_reproduction_v3_common",
-    "foci_velocity_stage_b_reproduction_v3_coverage",
-    "foci_velocity_stage_b_reproduction_v3_digest",
+STAGE_B_V4_FORWARDERS = {
+    "foci_velocity_stage_b_reproduction_v4_core",
+    "foci_velocity_stage_b_reproduction_v4_membership",
+    "foci_velocity_stage_b_reproduction_v4_pooled",
+    "foci_velocity_stage_b_reproduction_v4_common",
+    "foci_velocity_stage_b_reproduction_v4_coverage",
+    "foci_velocity_stage_b_reproduction_v4_digest",
 }
 
 
@@ -27,5 +27,6 @@ def test_board_reply_emitters_delegate_to_shared_commission_sink():
         assert "impl foci_firmware::commission_dispatch::CommissionReplySink" in text
         assert "ReplyPayload::" not in text
         assert "match payload" not in text
-        for method in STAGE_B_V3_FORWARDERS:
+        for method in STAGE_B_V4_FORWARDERS:
             assert method in text, f"{rel_path} is missing {method}"
+        assert "foci_velocity_stage_b_reproduction_v3_" not in text
