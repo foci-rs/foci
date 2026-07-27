@@ -42,6 +42,23 @@ def test_rejects_missing_named_frame():
         stack_frame_gate.extract_frame_bytes(DISASSEMBLY, "missing::frame")
 
 
+def test_rejects_an_elf_without_the_trace_integral_path():
+    with pytest.raises(ValueError, match="trace-velocity-sweep"):
+        stack_frame_gate.require_trace_artifact(DISASSEMBLY)
+
+
+def test_accepts_an_elf_with_the_trace_integral_path():
+    trace_label = (
+        "080268d4 <foci_firmware::commissioning::outer::velocity::"
+        "integral_sweep::step_velocity_integral_with_trace::{{closure}}>:\n"
+    )
+    trace_disassembly = (
+        DISASSEMBLY + trace_label + (" 80268d4: b081          sub sp, #0x4\n")
+    )
+
+    stack_frame_gate.require_trace_artifact(trace_disassembly)
+
+
 def test_budget_failure_reports_measured_and_allowed_bytes():
     failure = stack_frame_gate.check_budget("main", measured=36_648, maximum=30_000)
 

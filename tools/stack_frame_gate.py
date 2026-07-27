@@ -17,6 +17,10 @@ LABEL_RE = re.compile(r"^[0-9a-fA-F]+ <(.+)>:$")
 STACK_SUB_RE = re.compile(
     r"\bsub(?:\.w)?\s+sp,\s*(?:sp,\s*)?#(0x[0-9a-fA-F]+|[0-9]+)\b"
 )
+TRACE_ONLY_SYMBOL = (
+    "foci_firmware::commissioning::outer::velocity::integral_sweep::"
+    "step_velocity_integral_with_trace::"
+)
 
 
 @dataclass(frozen=True)
@@ -96,6 +100,16 @@ def check_budget(label: str, measured: int, maximum: int) -> str | None:
     return f"{label}: {measured}-byte frame exceeds {maximum}-byte budget"
 
 
+def require_trace_artifact(disassembly: str) -> None:
+    """Reject an ELF that does not contain the trace-only integral path."""
+
+    for line in disassembly.splitlines():
+        match = LABEL_RE.match(line)
+        if match is not None and TRACE_ONLY_SYMBOL in match.group(1):
+            return
+    raise ValueError("ELF does not contain the trace-velocity-sweep integral path")
+
+
 def disassemble(elf_path: Path) -> str:
     """Return demangled disassembly for the release ELF."""
 
@@ -136,6 +150,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         output = disassemble(args.elf)
+        require_trace_artifact(output)
         measurements = [
             (
                 budget,
