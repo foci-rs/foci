@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 OPENFFBOARD_REQUEST = Path("boards/openffboard-fw/src/tmc_control/request.rs")
 OUROBOROS_REQUEST = Path("boards/ouroboros-fw/src/tmc_control/request.rs")
@@ -109,10 +108,7 @@ def test_disable_stop_actions_use_stepper_stop():
     openffboard = read(OPENFFBOARD_REQUEST.parent / "effects.rs")
     ouroboros = read(OUROBOROS_EFFECTS)
 
-    assert (
-        "BoardAction::Stepper(StepperAction::StopNow) => stepper_stop_from_p1(0)"
-        in openffboard
-    )
+    assert "BoardAction::Stepper(StepperAction::StopNow) => stepper_stop_from_p1(0)" in openffboard
     assert "BoardAction::Stepper(StepperAction::StopNow) => {" in ouroboros
     assert "stepper_stop_from_p1(channel)" in ouroboros
 

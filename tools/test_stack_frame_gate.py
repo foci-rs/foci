@@ -2,7 +2,6 @@ import pytest
 
 import stack_frame_gate
 
-
 DISASSEMBLY = """
 08000010 <example::domain::helper>:
  8000010: b081          sub sp, #0x4
@@ -24,10 +23,7 @@ DISASSEMBLY = """
 
 
 def test_extracts_all_initial_stack_subtractions():
-    assert (
-        stack_frame_gate.extract_frame_bytes(DISASSEMBLY, "main", exact_symbol=True)
-        == 36_648
-    )
+    assert stack_frame_gate.extract_frame_bytes(DISASSEMBLY, "main", exact_symbol=True) == 36_648
     assert (
         stack_frame_gate.extract_frame_bytes(
             DISASSEMBLY,
@@ -52,9 +48,7 @@ def test_accepts_an_elf_with_the_trace_integral_path():
         "080268d4 <foci_firmware::commissioning::outer::velocity::"
         "integral_sweep::step_velocity_integral_with_trace::{{closure}}>:\n"
     )
-    trace_disassembly = (
-        DISASSEMBLY + trace_label + (" 80268d4: b081          sub sp, #0x4\n")
-    )
+    trace_disassembly = DISASSEMBLY + trace_label + (" 80268d4: b081          sub sp, #0x4\n")
 
     stack_frame_gate.require_trace_artifact(trace_disassembly)
 

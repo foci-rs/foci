@@ -80,12 +80,8 @@ def test_compare_identical_surfaces_has_no_problems():
 
 
 def test_compare_allows_hardware_constant_value_differences():
-    off = _dict(
-        config={"CLOCK_FREQ": 84000000, "MCU": "stm32f407", "RECEIVE_WINDOW": 192}
-    )
-    our = _dict(
-        config={"CLOCK_FREQ": 260000000, "MCU": "stm32h723", "RECEIVE_WINDOW": 192}
-    )
+    off = _dict(config={"CLOCK_FREQ": 84000000, "MCU": "stm32f407", "RECEIVE_WINDOW": 192})
+    our = _dict(config={"CLOCK_FREQ": 260000000, "MCU": "stm32h723", "RECEIVE_WINDOW": 192})
     assert board_parity.compare_dictionaries(off, our) == []
 
 
@@ -132,12 +128,8 @@ def test_compare_flags_command_only_on_one_board():
 
 
 def test_compare_flags_non_allowlisted_constant_value_difference():
-    off = _dict(
-        config={"CLOCK_FREQ": 84000000, "MCU": "stm32f407", "RECEIVE_WINDOW": 192}
-    )
-    our = _dict(
-        config={"CLOCK_FREQ": 84000000, "MCU": "stm32f407", "RECEIVE_WINDOW": 256}
-    )
+    off = _dict(config={"CLOCK_FREQ": 84000000, "MCU": "stm32f407", "RECEIVE_WINDOW": 192})
+    our = _dict(config={"CLOCK_FREQ": 84000000, "MCU": "stm32f407", "RECEIVE_WINDOW": 256})
     problems = board_parity.compare_dictionaries(off, our)
     assert any("RECEIVE_WINDOW" in p for p in problems)
 
@@ -198,9 +190,7 @@ def test_compare_runtime_priorities_accepts_watchdog_above_commissioning():
 
 def test_compare_runtime_priorities_rejects_watchdog_at_commissioning_priority():
     openffboard = _runtime_source(watchdog_priority=1)
-    problems = board_parity.compare_runtime_task_priorities(
-        openffboard, _runtime_source()
-    )
+    problems = board_parity.compare_runtime_task_priorities(openffboard, _runtime_source())
     assert problems == ["OpenFFBoard RTIC task 'watchdog' priority is 1, expected 2"]
 
 

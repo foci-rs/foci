@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 BOARD_BACKENDS = [
     ROOT / "boards/openffboard-fw/src/commissioning_backend.rs",

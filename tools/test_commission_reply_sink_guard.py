@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 BOARD_REPLY_FILES = [
     Path("boards/openffboard-fw/src/ankyra/replies.rs"),

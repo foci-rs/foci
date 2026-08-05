@@ -11,12 +11,9 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-
 DEFAULT_ELF = Path("target/thumbv7em-none-eabi/release/openffboard-fw")
 LABEL_RE = re.compile(r"^[0-9a-fA-F]+ <(.+)>:$")
-STACK_SUB_RE = re.compile(
-    r"\bsub(?:\.w)?\s+sp,\s*(?:sp,\s*)?#(0x[0-9a-fA-F]+|[0-9]+)\b"
-)
+STACK_SUB_RE = re.compile(r"\bsub(?:\.w)?\s+sp,\s*(?:sp,\s*)?#(0x[0-9a-fA-F]+|[0-9]+)\b")
 TRACE_ONLY_SYMBOL = (
     "foci_firmware::commissioning::outer::velocity::integral_sweep::"
     "step_velocity_integral_with_trace::"
@@ -66,9 +63,7 @@ def extract_frame_bytes(
         if match is None:
             continue
         symbol = match.group(1)
-        if symbol == symbol_fragment or (
-            not exact_symbol and symbol_fragment in symbol
-        ):
+        if symbol == symbol_fragment or (not exact_symbol and symbol_fragment in symbol):
             start = index + 1
             break
     if start is None:

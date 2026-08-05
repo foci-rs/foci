@@ -151,18 +151,12 @@ def compare_dictionaries(openffboard: dict, ouroboros: dict) -> list[str]:
     problems += _compare_key_sets(
         "output", openffboard.get("output", {}), ouroboros.get("output", {})
     )
-    problems += _compare_config(
-        openffboard.get("config", {}), ouroboros.get("config", {})
-    )
+    problems += _compare_config(openffboard.get("config", {}), ouroboros.get("config", {}))
     problems += _compare_enumerations(
         openffboard.get("enumerations", {}), ouroboros.get("enumerations", {})
     )
-    problems += _check_required_static_strings(
-        "OpenFFBoard", openffboard.get("enumerations", {})
-    )
-    problems += _check_required_static_strings(
-        "Ouroboros", ouroboros.get("enumerations", {})
-    )
+    problems += _check_required_static_strings("OpenFFBoard", openffboard.get("enumerations", {}))
+    problems += _check_required_static_strings("Ouroboros", ouroboros.get("enumerations", {}))
     problems += _compare_metadata(openffboard, ouroboros)
     return problems
 
@@ -176,9 +170,7 @@ def _extract_rtic_task_priorities(source: str) -> dict[str, int]:
     return priorities
 
 
-def compare_runtime_task_priorities(
-    openffboard_source: str, ouroboros_source: str
-) -> list[str]:
+def compare_runtime_task_priorities(openffboard_source: str, ouroboros_source: str) -> list[str]:
     """Return messages for missing or unsafe RTIC task priorities."""
     problems = []
     for board, source in (

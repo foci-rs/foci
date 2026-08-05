@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 OPENFFBOARD_MAIN = Path("boards/openffboard-fw/src/main.rs")
 OUROBOROS_MAIN = Path("boards/ouroboros-fw/src/main.rs")
@@ -39,8 +38,9 @@ def test_ouroboros_config_reset_uses_shared_channel_reset_policy():
     assert "velocity_limit_cfg.store(500_000" not in text
     assert "position_p_value.store(640" not in text
     assert (
-        "stepper_state(channel)\n                        .position\n                        .store(0"
-        not in text
+        "stepper_state(channel)\n"
+        "                        .position\n"
+        "                        .store(0" not in text
     )
 
 
@@ -79,8 +79,5 @@ def test_ouroboros_slow_pid_homing_policy_uses_shared_helper():
     text = read(OUROBOROS_MAIN)
 
     assert ".apply_slow_channel_maintenance_tick(" in text
-    assert (
-        "if runtime.is_motor_enabled() {\n                    let homing_result"
-        not in text
-    )
+    assert "if runtime.is_motor_enabled() {\n                    let homing_result" not in text
     assert "status_poll_counters.fill(0)" in text

@@ -2,14 +2,12 @@
 
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 OPENFFBOARD_DIAGNOSTICS = Path("boards/openffboard-fw/src/tmc_diagnostics.rs")
 OUROBOROS_DIAGNOSTICS = Path("boards/ouroboros-fw/src/tmc_diagnostics.rs")
 OUROBOROS_REQUEST = Path("boards/ouroboros-fw/src/tmc_control/request.rs")
 SINK_MARKER = (
-    "impl foci_firmware::tmc_diagnostics::DiagnosticReplySink "
-    "for BoardDiagnosticReplySink"
+    "impl foci_firmware::tmc_diagnostics::DiagnosticReplySink for BoardDiagnosticReplySink"
 )
 DIAGNOSTIC_REPLY_TYPES = [
     "FociCurrentStepResult",

@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-
 WORKSPACE = Path(__file__).resolve().parents[1]
 OUROBOROS_SRC = WORKSPACE / "boards" / "ouroboros-fw" / "src"
 
