@@ -4,7 +4,9 @@ Compares the generated Klipper data dictionaries embedded in the OpenFFBoard
 and Ouroboros firmware ELFs and fails when their command, reply, enumeration,
 or constant surface diverges outside the hardware-topology allowlist. It also
 checks the RTIC task priorities that isolate watchdog service from sustained
-commissioning work.
+commissioning work, and that neither board's interrupt service routines call
+defmt -- an ISR that logs risks a reentrant defmt-rtt panic if it preempts a
+lower-priority task already mid-log-call.
 """
 
 from __future__ import annotations
@@ -24,6 +26,8 @@ DEFAULT_OPENFFBOARD_ELF = "target/thumbv7em-none-eabi/release/openffboard-fw"
 DEFAULT_OUROBOROS_ELF = "target/thumbv7em-none-eabihf/release/ouroboros-fw"
 DEFAULT_OPENFFBOARD_SOURCE = "boards/openffboard-fw/src/main.rs"
 DEFAULT_OUROBOROS_SOURCE = "boards/ouroboros-fw/src/main.rs"
+DEFAULT_OPENFFBOARD_INTERRUPTS = "boards/openffboard-fw/src/interrupts.rs"
+DEFAULT_OUROBOROS_INTERRUPTS = "boards/ouroboros-fw/src/interrupts.rs"
 
 REQUIRED_RTIC_TASK_PRIORITIES = {
     "tmc_control": 1,
@@ -189,6 +193,18 @@ def compare_runtime_task_priorities(openffboard_source: str, ouroboros_source: s
     return problems
 
 
+def check_no_isr_logging(source: str, board: str) -> list[str]:
+    """Return messages for any defmt call found in an ISR-body source file.
+
+    Both boards' interrupts.rs files hold only hardware ISR bodies (see that
+    file's own module doc), so any defmt:: call anywhere in it is a real
+    reentrant-logging hazard, not a false positive worth narrowing further.
+    """
+    if "defmt::" in source:
+        return [f"{board} interrupts.rs calls defmt:: from an ISR body"]
+    return []
+
+
 def find_dictionary_json(blob: bytes) -> dict:
     """Locate and parse the uncompressed dictionary JSON in a byte blob.
 
@@ -280,6 +296,18 @@ def main(argv: list[str] | None = None) -> int:
         default=Path(DEFAULT_OUROBOROS_SOURCE),
         help="path to the Ouroboros RTIC application source",
     )
+    parser.add_argument(
+        "--openffboard-interrupts",
+        type=Path,
+        default=Path(DEFAULT_OPENFFBOARD_INTERRUPTS),
+        help="path to the OpenFFBoard ISR-body source",
+    )
+    parser.add_argument(
+        "--ouroboros-interrupts",
+        type=Path,
+        default=Path(DEFAULT_OUROBOROS_INTERRUPTS),
+        help="path to the Ouroboros ISR-body source",
+    )
     args = parser.parse_args(argv)
 
     for label, path in (
@@ -299,6 +327,8 @@ def main(argv: list[str] | None = None) -> int:
     for label, path in (
         ("OpenFFBoard", args.openffboard_source),
         ("Ouroboros", args.ouroboros_source),
+        ("OpenFFBoard", args.openffboard_interrupts),
+        ("Ouroboros", args.ouroboros_interrupts),
     ):
         if not path.is_file():
             print(f"error: {label} source not found at {path}", file=sys.stderr)
@@ -321,6 +351,8 @@ def main(argv: list[str] | None = None) -> int:
     problems += compare_runtime_task_priorities(
         args.openffboard_source.read_text(), args.ouroboros_source.read_text()
     )
+    problems += check_no_isr_logging(args.openffboard_interrupts.read_text(), "OpenFFBoard")
+    problems += check_no_isr_logging(args.ouroboros_interrupts.read_text(), "Ouroboros")
 
     if problems:
         print("Board parity gate FAILED:", file=sys.stderr)
@@ -328,7 +360,9 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  - {problem}", file=sys.stderr)
         return 1
 
-    print("Board parity gate passed: protocol surfaces and RTIC priorities match.")
+    print(
+        "Board parity gate passed: protocol surfaces and RTIC priorities match, no ISR logs defmt."
+    )
     return 0
 
 

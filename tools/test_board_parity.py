@@ -194,6 +194,30 @@ def test_compare_runtime_priorities_rejects_watchdog_at_commissioning_priority()
     assert problems == ["OpenFFBoard RTIC task 'watchdog' priority is 1, expected 2"]
 
 
+def test_check_no_isr_logging_accepts_clean_source():
+    source = """
+    pub fn tmc_status_irq() {
+        fault_active.store(true, Ordering::Relaxed);
+        tmc_disable_signal.signal(());
+    }
+    """
+    assert board_parity.check_no_isr_logging(source, "OpenFFBoard") == []
+
+
+def test_check_no_isr_logging_flags_defmt_call():
+    source = """
+    pub fn tmc_status_irq() {
+        fault_active.store(true, Ordering::Relaxed);
+        tmc_disable_signal.signal(());
+        defmt::warn!("TMC4671 STATUS interrupt: fault detected, step timer disabled");
+    }
+    """
+    problems = board_parity.check_no_isr_logging(source, "Ouroboros")
+    assert len(problems) == 1
+    assert "Ouroboros" in problems[0]
+    assert "defmt" in problems[0]
+
+
 def test_extract_dictionary_missing_file_raises(tmp_path):
     missing = tmp_path / "nope.elf"
     with pytest.raises(FileNotFoundError):
@@ -267,6 +291,34 @@ def test_main_fails_when_runtime_task_priority_is_unsafe(tmp_path, monkeypatch, 
 
     assert code == 1
     assert "watchdog" in capsys.readouterr().err
+
+
+def test_main_fails_when_isr_source_logs(tmp_path, monkeypatch, capsys):
+    off = tmp_path / "off.elf"
+    our = tmp_path / "our.elf"
+    off_interrupts = tmp_path / "openffboard_interrupts.rs"
+    our_interrupts = tmp_path / "ouroboros_interrupts.rs"
+    off.write_bytes(b"stub")
+    our.write_bytes(b"stub")
+    off_interrupts.write_text("pub fn tmc_status_irq() {}\n")
+    our_interrupts.write_text('pub fn tmc_status_irq() {\n    defmt::warn!("fault");\n}\n')
+    monkeypatch.setattr(board_parity, "extract_dictionary", lambda path: _dict())
+
+    code = board_parity.main(
+        [
+            "--openffboard",
+            str(off),
+            "--ouroboros",
+            str(our),
+            "--openffboard-interrupts",
+            str(off_interrupts),
+            "--ouroboros-interrupts",
+            str(our_interrupts),
+        ]
+    )
+
+    assert code == 1
+    assert "defmt" in capsys.readouterr().err
 
 
 def test_main_dictless_elf_reports_error(tmp_path, monkeypatch, capsys):
