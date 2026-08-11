@@ -5,6 +5,7 @@ members = [
     "shared/foci-klipper",
     "shared/foci-usb-stm32",
     "shared/foci-firmware",
+    "shared/foci-firmware/macros",
     "boards/openffboard-fw",
     "boards/openffboard-fw/host-tests",
     "boards/ouroboros-fw",
@@ -20,6 +21,7 @@ default-members = [
     "shared/foci-klipper",
     "shared/foci-usb-stm32",
     "shared/foci-firmware",
+    "shared/foci-firmware/macros",
 ]
 
 [workspace.package]

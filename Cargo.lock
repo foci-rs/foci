@@ -621,6 +621,7 @@ dependencies = [
  "embedded-hal 1.0.0",
  "embedded-hal-async",
  "embedded-hal-mock",
+ "foci-firmware-macros",
  "foci-klipper",
  "foci-tmc4671",
  "heapless 0.9.2",
@@ -628,6 +629,15 @@ dependencies = [
  "pollster",
  "static_assertions",
  "tokio",
+]
+
+[[package]]
+name = "foci-firmware-macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
 ]
 
 [[package]]
@@ -959,7 +969,6 @@ dependencies = [
  "foci-tmc4671",
  "foci-usb-stm32",
  "heapless 0.9.2",
- "panic-probe",
  "rtic",
  "rtic-monotonics",
  "rtic-sync",
