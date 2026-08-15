@@ -39,7 +39,7 @@ def test_rejects_missing_named_frame():
 
 
 def test_rejects_an_elf_without_the_trace_integral_path():
-    with pytest.raises(ValueError, match="trace-velocity-sweep"):
+    with pytest.raises(ValueError, match="trace integral path"):
         stack_frame_gate.require_trace_artifact(DISASSEMBLY)
 
 
