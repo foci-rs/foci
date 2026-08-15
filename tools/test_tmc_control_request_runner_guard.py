@@ -58,9 +58,12 @@ def test_board_request_handlers_delegate_to_shared_runner():
     for rel_path in [OPENFFBOARD_REQUEST, OUROBOROS_REQUEST]:
         text = read(rel_path)
 
-        assert "handle_shared_request(" in text
+        assert "handle_tmc_control_request_with_stages(" in text
         assert "TmcRequestBoard" in text
-        assert "handle_tmc_control_request as handle_shared_request" in text
+        assert (
+            "use foci_firmware::tmc_control::request::"
+            "handle_tmc_control_request_with_stages;" in text
+        )
 
 
 def test_board_request_files_do_not_match_shared_policy_arms_locally():
@@ -83,7 +86,8 @@ def test_shared_runner_owns_gain_seeded_calibration_and_tune_restore():
 
     assert "new_calibrate_for_tmc_with_gains_and_trace_seq" in text
     assert "runtime.stored_gains()" in text
-    assert "new_outer_for_tmc_with_trace_seq" in text
+    assert "new_outer_for_tmc_with_breakaway_campaign" in text
+    assert "tune_route" in text
     assert "restore_phase_advance_now" in text
 
 
