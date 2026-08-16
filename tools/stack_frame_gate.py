@@ -15,8 +15,7 @@ DEFAULT_ELF = Path("target/thumbv7em-none-eabi/release/openffboard-fw")
 LABEL_RE = re.compile(r"^[0-9a-fA-F]+ <(.+)>:$")
 STACK_SUB_RE = re.compile(r"\bsub(?:\.w)?\s+sp,\s*(?:sp,\s*)?#(0x[0-9a-fA-F]+|[0-9]+)\b")
 TRACE_ONLY_SYMBOL = (
-    "foci_firmware::commissioning::outer::velocity::integral_sweep::"
-    "step_velocity_integral_with_trace::"
+    "foci_firmware::commissioning::CommissioningEngine::emit_stage_c_terminal_trace::"
 )
 
 
@@ -103,13 +102,13 @@ def check_budget(label: str, measured: int, maximum: int) -> str | None:
 
 
 def require_trace_artifact(disassembly: str) -> None:
-    """Reject an ELF that does not contain the trace-only integral path."""
+    """Reject an ELF that does not contain the trace-only terminal emission path."""
 
     for line in disassembly.splitlines():
         match = LABEL_RE.match(line)
         if match is not None and TRACE_ONLY_SYMBOL in match.group(1):
             return
-    raise ValueError("ELF does not contain the trace integral path")
+    raise ValueError("ELF does not contain the trace-only stack marker")
 
 
 def disassemble(elf_path: Path) -> str:
