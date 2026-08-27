@@ -54,10 +54,17 @@ def test_both_boards_use_shared_shutdown_safe_state_policy():
 def test_physical_trigger_stop_helpers_do_not_dearm_motor_policy():
     for rel_path in [OPENFFBOARD_TRIGGER_DOMAIN, OUROBOROS_TRIGGER_DOMAIN]:
         text = read(rel_path)
-        for fn_name in ["stop_physical_stepper_unmasked", "stop_physical_stepper_masked"]:
-            stop_physical = extract_fn(text, fn_name)
 
-            assert "motor_armed.store(false" not in stop_physical
+        # The real GPIO/state-reset logic lives in the shared inner
+        # function; the two entry points below are thin delegates, so the
+        # policy check belongs on the inner function's body.
+        stop_physical_inner = extract_fn(text, "stop_physical_stepper_inner")
+        assert "motor_armed.store(false" not in stop_physical_inner
+
+        for fn_name in ["stop_physical_stepper_unmasked", "stop_physical_stepper_masked"]:
+            wrapper = extract_fn(text, fn_name)
+
+            assert "stop_physical_stepper_inner(" in wrapper
 
 
 def test_request_normal_tail_policy_matches_openffboard():
