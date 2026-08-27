@@ -54,9 +54,10 @@ def test_both_boards_use_shared_shutdown_safe_state_policy():
 def test_physical_trigger_stop_helpers_do_not_dearm_motor_policy():
     for rel_path in [OPENFFBOARD_TRIGGER_DOMAIN, OUROBOROS_TRIGGER_DOMAIN]:
         text = read(rel_path)
-        stop_physical = extract_fn(text, "stop_physical_stepper_no_lock")
+        for fn_name in ["stop_physical_stepper_unmasked", "stop_physical_stepper_masked"]:
+            stop_physical = extract_fn(text, fn_name)
 
-        assert "motor_armed.store(false" not in stop_physical
+            assert "motor_armed.store(false" not in stop_physical
 
 
 def test_request_normal_tail_policy_matches_openffboard():
