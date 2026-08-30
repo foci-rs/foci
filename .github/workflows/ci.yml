@@ -69,3 +69,46 @@ jobs:
         run: cargo build -p openffboard-fw --target thumbv7em-none-eabi --release --features trace
       - name: OpenFFBoard commissioning stack-frame gate
         run: python tools/ci/stack_frame_gate.py
+      - name: mkdir rtic-future-gate artifact dir
+        run: mkdir -p target/rtic-future-gate
+      - name: Save openffboard-fw trace ELF for the RTIC future gate
+        run: cp target/thumbv7em-none-eabi/release/openffboard-fw target/rtic-future-gate/openffboard-fw-trace
+      - name: cargo build (openffboard board, release, re-build without trace)
+        run: cargo build -p openffboard-fw --target thumbv7em-none-eabi --release
+      - name: Save openffboard-fw release ELF for the RTIC future gate
+        run: cp target/thumbv7em-none-eabi/release/openffboard-fw target/rtic-future-gate/openffboard-fw
+      - name: cargo build (ouroboros trace diagnostic, release)
+        run: cargo build -p ouroboros-fw --target thumbv7em-none-eabihf --release --features trace
+      - name: Save ouroboros-fw trace ELF for the RTIC future gate
+        run: cp target/thumbv7em-none-eabihf/release/ouroboros-fw target/rtic-future-gate/ouroboros-fw-trace
+      - name: cargo build (ouroboros board, release, re-build without trace)
+        run: cargo build -p ouroboros-fw --target thumbv7em-none-eabihf --release
+      - name: Save ouroboros-fw release ELF for the RTIC future gate
+        run: cp target/thumbv7em-none-eabihf/release/ouroboros-fw target/rtic-future-gate/ouroboros-fw
+      - name: Install nightly Rust toolchain (RTIC future-size probe)
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly
+          targets: thumbv7em-none-eabi, thumbv7em-none-eabihf
+      - name: Capture openffboard-fw type sizes (release)
+        run: |
+          RUSTFLAGS="-Zprint-type-sizes" cargo +nightly build -p openffboard-fw \
+            --target thumbv7em-none-eabi --release \
+            > openffboard-fw-type-sizes.txt 2>&1
+      - name: Capture openffboard-fw type sizes (trace)
+        run: |
+          RUSTFLAGS="-Zprint-type-sizes" cargo +nightly build -p openffboard-fw \
+            --target thumbv7em-none-eabi --release --features trace \
+            > openffboard-fw-trace-type-sizes.txt 2>&1
+      - name: Capture ouroboros-fw type sizes (release)
+        run: |
+          RUSTFLAGS="-Zprint-type-sizes" cargo +nightly build -p ouroboros-fw \
+            --target thumbv7em-none-eabihf --release \
+            > ouroboros-fw-type-sizes.txt 2>&1
+      - name: Capture ouroboros-fw type sizes (trace)
+        run: |
+          RUSTFLAGS="-Zprint-type-sizes" cargo +nightly build -p ouroboros-fw \
+            --target thumbv7em-none-eabihf --release --features trace \
+            > ouroboros-fw-trace-type-sizes.txt 2>&1
+      - name: RTIC tmc_control future-size and free-SRAM gate
+        run: python tools/ci/rtic_future_gate.py
