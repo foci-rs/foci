@@ -1,5 +1,4 @@
 import pytest
-
 import stack_frame_gate
 
 DISASSEMBLY = """

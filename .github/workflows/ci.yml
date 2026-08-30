@@ -64,8 +64,8 @@ jobs:
       - name: Install board parity gate deps
         run: pip install -r tools/requirements.txt
       - name: Board command/reply parity gate
-        run: python tools/board_parity.py
+        run: python tools/ci/board_parity.py
       - name: cargo build (openffboard trace diagnostic, release)
         run: cargo build -p openffboard-fw --target thumbv7em-none-eabi --release --features trace
       - name: OpenFFBoard commissioning stack-frame gate
-        run: python tools/stack_frame_gate.py
+        run: python tools/ci/stack_frame_gate.py

@@ -2,9 +2,8 @@
 
 import json
 
-import pytest
-
 import board_parity
+import pytest
 
 
 def _dict_json(**overrides) -> bytes:
