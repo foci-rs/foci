@@ -83,7 +83,10 @@ REQUIRED = {
     "workflow_shape": {"ident", "wire_code", "const_stem", "doc"},
     "action": {"ident", "wire_code", "label", "doc"},
 }
-EXPECTED_RESERVED = {"phase": [0, 9, 10, 11, 12, 13, 14, 15], "action": [0, 3, 4, 5, 6]}
+EXPECTED_RESERVED = {
+    "phase": [0, 9, 10, 11, 12, 13, 14, 15, 22, 23, 24, 25],
+    "action": [0, 3, 4, 5, 6],
+}
 
 # Enum-level docs (fixed generator text, verbatim from the current source).
 COMMISSION_ENUM_DOC = [

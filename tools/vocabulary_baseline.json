@@ -44,22 +44,6 @@
       "label": "Reversal standstill robustness gate",
       "trace_ident": "ReversalStandstillRobustnessGate"
     },
-    "22": {
-      "label": "Position tune",
-      "trace_ident": "PositionTune"
-    },
-    "23": {
-      "label": "Filter selection",
-      "trace_ident": "FilterTune"
-    },
-    "24": {
-      "label": "Commit",
-      "trace_ident": "Commit"
-    },
-    "25": {
-      "label": "Outer done",
-      "trace_ident": "OuterDone"
-    },
     "3": {
       "label": "Phase wiring",
       "trace_ident": "PhaseWiringCheck"
