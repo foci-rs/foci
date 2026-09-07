@@ -1,3 +1,4 @@
+import importlib.util
 import json
 import tomllib
 from pathlib import Path
@@ -13,7 +14,6 @@ def _manifest():
 
 def test_manifest_matches_python_baseline():
     m, b = _manifest(), json.loads(_BASELINE.read_text())
-    # phase: manifest (code -> label, trace_ident) equals the live host tables.
     m_phase = {
         str(e["wire_code"]): {"label": e["label"], "trace_ident": e["trace_ident"]}
         for e in m["phase"]
@@ -24,8 +24,6 @@ def test_manifest_matches_python_baseline():
     m_action = {e["label"]: e["wire_code"] for e in m["action"]}
     assert m_action == b["action"], "manifest action differs from shipping ACTION_CODES"
 
-
-import importlib.util  # noqa: E402
 
 _g = importlib.util.spec_from_file_location(
     "genvocab", _ROOT / "tools/gen_commissioning_vocabulary.py"

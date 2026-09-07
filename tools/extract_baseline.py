@@ -24,15 +24,13 @@ def _dict_literal(path: Path, name: str) -> dict:
 
 
 def main() -> int:
-    kl_phase = _dict_literal(KL / "commissioning.py", "PHASE_NAMES")  # code -> prose
-    kl_break = _dict_literal(KL / "velocity_integral.py", "BREAKAWAY_PHASE_NAMES")  # code -> snake
-    kl_action = _dict_literal(KL / "acceptance_matrix.py", "ACTION_CODES")  # label -> code
-    tr_phase = _dict_literal(TR / "protocol.py", "PHASE_NAMES")  # code -> ident
-    tr_break = _dict_literal(TR / "protocol.py", "BREAKAWAY_PHASE_NAMES")  # code -> snake
+    kl_phase = _dict_literal(KL / "commissioning.py", "PHASE_NAMES")
+    kl_break = _dict_literal(KL / "velocity_integral.py", "BREAKAWAY_PHASE_NAMES")
+    kl_action = _dict_literal(KL / "acceptance_matrix.py", "ACTION_CODES")
+    tr_phase = _dict_literal(TR / "protocol.py", "PHASE_NAMES")
+    tr_break = _dict_literal(TR / "protocol.py", "BREAKAWAY_PHASE_NAMES")
 
-    # Cross-check the two independent breakaway tables agree exactly.
     assert kl_break == tr_break, "klipper and trace BREAKAWAY_PHASE_NAMES disagree"
-    # Cross-check phase code sets agree across klipper prose and trace ident tables.
     assert set(kl_phase) == set(tr_phase), "klipper and trace PHASE_NAMES code sets disagree"
 
     baseline = {
