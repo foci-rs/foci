@@ -22,7 +22,7 @@
     },
     "17": {
       "label": "Closed-loop entry",
-      "trace_ident": "ClosedLoopEntry"
+      "trace_ident": "ClosedLoopActivation"
     },
     "18": {
       "label": "Breakaway proportional acquisition",
@@ -54,7 +54,7 @@
     },
     "5": {
       "label": "Electrical ID",
-      "trace_ident": "ElectricalId"
+      "trace_ident": "ElectricalIdentification"
     },
     "6": {
       "label": "Current tune",
