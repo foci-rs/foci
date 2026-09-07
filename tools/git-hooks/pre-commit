@@ -1,0 +1,6 @@
+#!/bin/sh
+root=$(git rev-parse --show-toplevel)
+python "$root/tools/gen_commissioning_vocabulary.py" --check || {
+  echo "vocabulary codegen is stale: rerun tools/gen_commissioning_vocabulary.py" >&2
+  exit 1
+}
