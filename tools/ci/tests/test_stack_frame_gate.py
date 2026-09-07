@@ -45,7 +45,7 @@ def test_rejects_an_elf_without_the_trace_only_stack_marker():
 def test_accepts_an_elf_with_the_trace_only_stack_marker():
     trace_label = (
         "080268d4 <foci_firmware::commissioning::CommissioningEngine::"
-        "emit_stage_c_terminal_trace::{{closure}}>:\n"
+        "emit_integral_terminal_trace::{{closure}}>:\n"
     )
     trace_disassembly = DISASSEMBLY + trace_label + (" 80268d4: b081          sub sp, #0x4\n")
 

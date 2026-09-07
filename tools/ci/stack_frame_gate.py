@@ -15,7 +15,7 @@ DEFAULT_ELF = Path("target/thumbv7em-none-eabi/release/openffboard-fw")
 LABEL_RE = re.compile(r"^[0-9a-fA-F]+ <(.+)>:$")
 STACK_SUB_RE = re.compile(r"\bsub(?:\.w)?\s+sp,\s*(?:sp,\s*)?#(0x[0-9a-fA-F]+|[0-9]+)\b")
 TRACE_ONLY_SYMBOL = (
-    "foci_firmware::commissioning::CommissioningEngine::emit_stage_c_terminal_trace::"
+    "foci_firmware::commissioning::CommissioningEngine::emit_integral_terminal_trace::"
 )
 
 
