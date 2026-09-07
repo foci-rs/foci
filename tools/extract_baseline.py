@@ -24,11 +24,11 @@ def _dict_literal(path: Path, name: str) -> dict:
 
 
 def main() -> int:
-    kl_phase = _dict_literal(KL / "commissioning.py", "PHASE_NAMES")            # code -> prose
+    kl_phase = _dict_literal(KL / "commissioning.py", "PHASE_NAMES")  # code -> prose
     kl_break = _dict_literal(KL / "velocity_integral.py", "BREAKAWAY_PHASE_NAMES")  # code -> snake
-    kl_action = _dict_literal(KL / "acceptance_matrix.py", "ACTION_CODES")      # label -> code
-    tr_phase = _dict_literal(TR / "protocol.py", "PHASE_NAMES")                 # code -> ident
-    tr_break = _dict_literal(TR / "protocol.py", "BREAKAWAY_PHASE_NAMES")       # code -> snake
+    kl_action = _dict_literal(KL / "acceptance_matrix.py", "ACTION_CODES")  # label -> code
+    tr_phase = _dict_literal(TR / "protocol.py", "PHASE_NAMES")  # code -> ident
+    tr_break = _dict_literal(TR / "protocol.py", "BREAKAWAY_PHASE_NAMES")  # code -> snake
 
     # Cross-check the two independent breakaway tables agree exactly.
     assert kl_break == tr_break, "klipper and trace BREAKAWAY_PHASE_NAMES disagree"
@@ -36,11 +36,15 @@ def main() -> int:
     assert set(kl_phase) == set(tr_phase), "klipper and trace PHASE_NAMES code sets disagree"
 
     baseline = {
-        "phase": {str(code): {"label": kl_phase[code], "trace_ident": tr_phase[code]} for code in kl_phase},
+        "phase": {
+            str(code): {"label": kl_phase[code], "trace_ident": tr_phase[code]} for code in kl_phase
+        },
         "breakaway": {str(code): kl_break[code] for code in kl_break},
-        "action": {label: code for label, code in kl_action.items()},
+        "action": dict(kl_action.items()),
     }
-    (ROOT / "tools/vocabulary_baseline.json").write_text(json.dumps(baseline, indent=2, sort_keys=True) + "\n")
+    (ROOT / "tools/vocabulary_baseline.json").write_text(
+        json.dumps(baseline, indent=2, sort_keys=True) + "\n"
+    )
     print("wrote vocabulary_baseline.json")
     return 0
 
