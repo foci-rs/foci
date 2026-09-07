@@ -43,6 +43,8 @@ STEM_PATTERNS = {
     "StageC": re.compile(r"StageC(?![a-z])"),
     "stage_b": re.compile(r"stage_b(?![a-zA-Z])"),
     "stage_c": re.compile(r"stage_c(?![a-zA-Z])"),
+    "STAGE_B": re.compile(r"STAGE_B(?![A-Za-z])"),
+    "STAGE_C": re.compile(r"STAGE_C(?![A-Za-z])"),
 }
 
 # Whole-identifier tokens, bounded on both sides (word characters include
@@ -62,6 +64,7 @@ SUBSTRING_TOKENS = (
     "stage_c_resume",
     "complete_candidate",
     "CompleteCandidate",
+    "COMPLETE_CANDIDATE",
 )
 
 # Files that intentionally retain a retired token, keyed by path relative to
