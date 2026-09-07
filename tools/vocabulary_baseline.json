@@ -1,8 +1,8 @@
 {
   "action": {
     "breakaway_seeded": 7,
-    "matrix_ascending": 1,
-    "matrix_descending": 2,
+    "amplitude_up": 1,
+    "amplitude_down": 2,
     "robustness_reversal": 9,
     "stage_c_resume": 8
   },

@@ -233,8 +233,9 @@ def emit_klipper(m: dict) -> str:
     o += ["}\n\n"]
     o += [f"{e['const_stem']} = {e['wire_code']}\n" for e in m["workflow_shape"]]
     o += [
-        "\nWORKFLOW_SHAPE_TO_MATRIX_ORDER: dict[int, int] = {\n",
-        "    SHAPE_MATRIX_ASCENDING: 1,\n    SHAPE_MATRIX_DESCENDING: 2,\n}\n",
+        "\nWORKFLOW_SHAPE_TO_AMPLITUDE_ORDER: dict[int, int] = {\n",
+        "    SHAPE_FIXED_GAIN_AMPLITUDE_ASCENDING: 1,\n",
+        "    SHAPE_FIXED_GAIN_AMPLITUDE_DESCENDING: 2,\n}\n",
     ]
     return "".join(o)
 

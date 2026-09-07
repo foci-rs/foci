@@ -26,7 +26,7 @@ def _dict_literal(path: Path, name: str) -> dict:
 def main() -> int:
     kl_phase = _dict_literal(KL / "commissioning.py", "PHASE_NAMES")
     kl_break = _dict_literal(KL / "velocity_integral.py", "BREAKAWAY_PHASE_NAMES")
-    kl_action = _dict_literal(KL / "acceptance_matrix.py", "ACTION_CODES")
+    kl_action = _dict_literal(KL / "fixed_gain_amplitude.py", "ACTION_CODES")
     tr_phase = _dict_literal(TR / "protocol.py", "PHASE_NAMES")
     tr_break = _dict_literal(TR / "protocol.py", "BREAKAWAY_PHASE_NAMES")
 
