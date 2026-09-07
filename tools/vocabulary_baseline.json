@@ -1,0 +1,88 @@
+{
+  "action": {
+    "breakaway_seeded": 7,
+    "matrix_ascending": 1,
+    "matrix_descending": 2,
+    "robustness_reversal": 9,
+    "stage_c_resume": 8
+  },
+  "breakaway": {
+    "0": "breakaway_probe",
+    "1": "proportional_response_discovery",
+    "2": "proportional_band_confirmation"
+  },
+  "phase": {
+    "1": {
+      "label": "ADC calibration",
+      "trace_ident": "AdcCalibrate"
+    },
+    "16": {
+      "label": "Encoder alignment",
+      "trace_ident": "EncoderAlign"
+    },
+    "17": {
+      "label": "Closed-loop entry",
+      "trace_ident": "ClosedLoopEntry"
+    },
+    "18": {
+      "label": "Breakaway proportional acquisition",
+      "trace_ident": "BreakawayProportionalAcquisition"
+    },
+    "19": {
+      "label": "Integral gain response characterization",
+      "trace_ident": "IntegralGainResponseCharacterization"
+    },
+    "2": {
+      "label": "Coil check",
+      "trace_ident": "CoilCheck"
+    },
+    "20": {
+      "label": "Fixed-gain amplitude validation",
+      "trace_ident": "FixedGainAmplitudeValidation"
+    },
+    "21": {
+      "label": "Reversal standstill robustness gate",
+      "trace_ident": "ReversalStandstillRobustnessGate"
+    },
+    "22": {
+      "label": "Position tune",
+      "trace_ident": "PositionTune"
+    },
+    "23": {
+      "label": "Filter selection",
+      "trace_ident": "FilterTune"
+    },
+    "24": {
+      "label": "Commit",
+      "trace_ident": "Commit"
+    },
+    "25": {
+      "label": "Outer done",
+      "trace_ident": "OuterDone"
+    },
+    "3": {
+      "label": "Phase wiring",
+      "trace_ident": "PhaseWiringCheck"
+    },
+    "4": {
+      "label": "Encoder check",
+      "trace_ident": "EncoderCheck"
+    },
+    "5": {
+      "label": "Electrical ID",
+      "trace_ident": "ElectricalId"
+    },
+    "6": {
+      "label": "Current tune",
+      "trace_ident": "CurrentTune"
+    },
+    "7": {
+      "label": "Current validation",
+      "trace_ident": "CurrentValidate"
+    },
+    "8": {
+      "label": "Inner done",
+      "trace_ident": "InnerDone"
+    }
+  }
+}
