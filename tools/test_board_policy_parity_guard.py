@@ -9,6 +9,7 @@ OPENFFBOARD_REQUEST = Path("boards/openffboard-fw/src/tmc_control/request.rs")
 OUROBOROS_REQUEST = Path("boards/ouroboros-fw/src/tmc_control/request.rs")
 OPENFFBOARD_TRIGGER_DOMAIN = Path("boards/openffboard-fw/src/trigger_domain.rs")
 OUROBOROS_TRIGGER_DOMAIN = Path("boards/ouroboros-fw/src/trigger_domain.rs")
+SHARED_DRIVER = Path("shared/foci-firmware/src/tmc_control/driver.rs")
 
 
 def read(path: Path) -> str:
@@ -84,8 +85,15 @@ def test_ouroboros_requests_enter_shared_runner_without_local_preclassification(
 
 
 def test_ouroboros_slow_pid_homing_policy_uses_shared_helper():
-    text = read(OUROBOROS_MAIN)
+    # Both boards drive slow-channel maintenance through the shared
+    # `ChannelDriver`, not a per-board copy in main.rs -- Ouroboros no longer
+    # calls `apply_slow_channel_maintenance_tick` directly, and the manual
+    # 1000-tick `status_poll_counters` sampler it used to gate is gone: the
+    # scheduler's `StatusAudit` unit class owns that cadence now.
+    driver_text = read(SHARED_DRIVER)
+    assert ".apply_slow_channel_maintenance_tick(" in driver_text
 
-    assert ".apply_slow_channel_maintenance_tick(" in text
+    text = read(OUROBOROS_MAIN)
     assert "if runtime.is_motor_enabled() {\n                    let homing_result" not in text
-    assert "status_poll_counters.fill(0)" in text
+    assert "status_poll_counters" not in text
+    assert "AuditResult" in text
