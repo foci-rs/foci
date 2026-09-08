@@ -9,6 +9,8 @@ OPENFFBOARD_REQUEST = Path("boards/openffboard-fw/src/tmc_control/request.rs")
 OUROBOROS_REQUEST = Path("boards/ouroboros-fw/src/tmc_control/request.rs")
 OPENFFBOARD_TRIGGER_DOMAIN = Path("boards/openffboard-fw/src/trigger_domain.rs")
 OUROBOROS_TRIGGER_DOMAIN = Path("boards/ouroboros-fw/src/trigger_domain.rs")
+OPENFFBOARD_USB_TRACE = Path("boards/openffboard-fw/src/usb_trace.rs")
+OUROBOROS_USB_TRACE = Path("boards/ouroboros-fw/src/usb_trace.rs")
 SHARED_DRIVER = Path("shared/foci-firmware/src/tmc_control/driver.rs")
 
 
@@ -82,6 +84,18 @@ def test_ouroboros_requests_enter_shared_runner_without_local_preclassification(
 
     assert ".classify_request(req.clone())" not in text
     assert "TmcPreRequestDisposition::ContinueRequest" in text
+
+
+def test_both_boards_emit_the_same_lifecycle_event_stream():
+    for declaration in [
+        "const EVENT_FIRMWARE_BOOT: u16 = 1;",
+        "const EVENT_USB_CONFIGURED: u16 = 2;",
+        "const EVENT_MOTOR_ARM: u16 = 3;",
+        "const EVENT_MOTOR_DISARM: u16 = 4;",
+        "const EVENT_STATUS_INTERRUPT: u16 = 9;",
+    ]:
+        assert declaration in read(OPENFFBOARD_USB_TRACE), f"OpenFFBoard missing {declaration}"
+        assert declaration in read(OUROBOROS_USB_TRACE), f"Ouroboros missing {declaration}"
 
 
 def test_ouroboros_disarm_does_not_zero_stepper_position_policy():
