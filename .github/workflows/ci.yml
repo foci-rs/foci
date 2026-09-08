@@ -80,6 +80,8 @@ jobs:
         run: cargo build -p openffboard-fw --target thumbv7em-none-eabi --release --features trace
       - name: OpenFFBoard commissioning stack-frame gate
         run: python tools/ci/stack_frame_gate.py
+      - name: STATUS_FLAGS clear-site gate
+        run: python tools/ci/status_flags_clear_gate.py
       - name: mkdir rtic-future-gate artifact dir
         run: mkdir -p target/rtic-future-gate
       - name: Save openffboard-fw trace ELF for the RTIC future gate
