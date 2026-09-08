@@ -10,16 +10,17 @@ Two measurements per board/build-variant combination:
   (via `size`) and the SRAM region length declared in the board's
   `memory.x` linker script.
 
-Thresholds are pinned with headroom above measured baselines (2026-08-30):
+Thresholds are pinned with headroom above measured baselines (2026-09-08):
 
-    OpenFFBoard: future <= 16,384 B (measured 13,240 B release, 13,304 B trace)
-                 free SRAM >= 60 KiB (measured 110,552 B release, 98,684 B trace)
-    Ouroboros:   future <= 26,624 B (measured 22,008 B release, 22,136 B trace)
-                 -- looser than OpenFFBoard because the measured baseline
-                 already exceeds OpenFFBoard's threshold; the gap is a
-                 tracked structural issue (dual-channel state in one shared
-                 coroutine), not a regression.
-                 free SRAM >= 200 KiB (measured 294,248 B release, 282,468 B trace)
+    OpenFFBoard: future <= 16,384 B (measured 4,864 B release, 4,880 B trace)
+                 free SRAM >= 60 KiB (measured 102,988 B release, 91,140 B trace)
+    Ouroboros:   future <= 16,384 B (measured 4,936 B release, 4,976 B trace)
+                 free SRAM >= 200 KiB (measured 279,340 B release, 267,460 B trace)
+
+Both boards share the same 16,384 B threshold: the dual-channel driver keeps
+per-channel scheduling state outside the `tmc_control` future instead of
+folding it into one shared coroutine, so the looser Ouroboros threshold this
+gate used to carry is no longer needed.
 
 To refresh a future-size baseline, capture nightly build output with:
 
@@ -187,7 +188,7 @@ def default_variants(workspace_root: Path) -> list[BoardVariant]:
 
     boards = (
         ("openffboard-fw", "thumbv7em-none-eabi", 16_384, 60 * 1024),
-        ("ouroboros-fw", "thumbv7em-none-eabihf", 26_624, 200 * 1024),
+        ("ouroboros-fw", "thumbv7em-none-eabihf", 16_384, 200 * 1024),
     )
     # Cargo builds both variants of a board into the same target-triple output
     # path, so a build's ELF must be copied out under a variant-specific name
