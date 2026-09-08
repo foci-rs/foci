@@ -17,11 +17,6 @@ Thresholds are pinned with headroom above measured baselines (2026-09-08):
     Ouroboros:   future <= 16,384 B (measured 4,936 B release, 4,976 B trace)
                  free SRAM >= 200 KiB (measured 279,340 B release, 267,460 B trace)
 
-Both boards share the same 16,384 B threshold: the dual-channel driver keeps
-per-channel scheduling state outside the `tmc_control` future instead of
-folding it into one shared coroutine, so the looser Ouroboros threshold this
-gate used to carry is no longer needed.
-
 To refresh a future-size baseline, capture nightly build output with:
 
     RUSTFLAGS="-Zprint-type-sizes" cargo +nightly build -p <board> \\
