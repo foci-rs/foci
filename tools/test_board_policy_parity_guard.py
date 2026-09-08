@@ -84,6 +84,13 @@ def test_ouroboros_requests_enter_shared_runner_without_local_preclassification(
     assert "TmcPreRequestDisposition::ContinueRequest" in text
 
 
+def test_ouroboros_disarm_does_not_zero_stepper_position_policy():
+    text = read(OUROBOROS_REQUEST)
+    disarm_motor = extract_fn(text, "disarm_motor")
+
+    assert "position" not in disarm_motor
+
+
 def test_ouroboros_slow_pid_homing_policy_uses_shared_helper():
     # Both boards drive slow-channel maintenance through the shared
     # `ChannelDriver`, not a per-board copy in main.rs -- Ouroboros no longer
