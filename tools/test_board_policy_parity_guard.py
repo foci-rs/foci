@@ -86,6 +86,18 @@ def test_ouroboros_requests_enter_shared_runner_without_local_preclassification(
     assert "TmcPreRequestDisposition::ContinueRequest" in text
 
 
+def test_ouroboros_emit_metadata_reports_real_values_not_placeholders():
+    emit_metadata = extract_fn(read(OUROBOROS_USB_TRACE), "emit_metadata")
+
+    assert "skipped_sample_counter_count: 0" not in emit_metadata
+    assert "critical_hz: 0" not in emit_metadata
+    assert "control_detail_hz: 0" not in emit_metadata
+    assert "status_hz: 0" not in emit_metadata
+    assert "pre_configuration_elapsed_ms: 0" not in emit_metadata
+    assert 'serial: ""' not in emit_metadata
+    assert "serial: trace_serial()" in emit_metadata
+
+
 def test_both_boards_emit_the_same_lifecycle_event_stream():
     for declaration in [
         "const EVENT_FIRMWARE_BOOT: u16 = 1;",
