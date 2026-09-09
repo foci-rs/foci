@@ -87,13 +87,29 @@ def test_ouroboros_requests_enter_shared_runner_without_local_preclassification(
 
 
 def test_ouroboros_emit_metadata_reports_real_values_not_placeholders():
-    emit_metadata = extract_fn(read(OUROBOROS_USB_TRACE), "emit_metadata")
+    text = read(OUROBOROS_USB_TRACE)
+    emit_metadata = extract_fn(text, "emit_metadata")
 
-    assert "skipped_sample_counter_count: 0" not in emit_metadata
-    assert "critical_hz: 0" not in emit_metadata
-    assert "control_detail_hz: 0" not in emit_metadata
-    assert "status_hz: 0" not in emit_metadata
-    assert "pre_configuration_elapsed_ms: 0" not in emit_metadata
+    for declaration in [
+        "const CRITICAL_HZ: u32 = 1000;",
+        "const CONTROL_DETAIL_HZ: u32 = 500;",
+        "const STATUS_HZ: u32 = 10;",
+    ]:
+        assert declaration in text, f"missing {declaration}"
+
+    assert "skipped_sample_counter_count: 3" in emit_metadata
+    assert "critical_hz: CRITICAL_HZ" in emit_metadata
+    assert "control_detail_hz: CONTROL_DETAIL_HZ" in emit_metadata
+    assert "status_hz: STATUS_HZ" in emit_metadata
+    for field in [
+        "pre_config_elapsed_ms",
+        "pre_config_skipped_critical",
+        "pre_config_skipped_control_detail",
+        "pre_config_skipped_status",
+    ]:
+        assert f"TRACE_COUNTERS\n            .{field}" in emit_metadata or (
+            f"TRACE_COUNTERS.{field}" in emit_metadata
+        ), f"emit_metadata does not read TRACE_COUNTERS.{field}"
     assert 'serial: ""' not in emit_metadata
     assert "serial: trace_serial()" in emit_metadata
 
