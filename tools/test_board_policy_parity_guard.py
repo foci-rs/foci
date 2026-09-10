@@ -133,6 +133,16 @@ def test_ouroboros_disarm_does_not_zero_stepper_position_policy():
     assert "position" not in disarm_motor
 
 
+def test_ouroboros_usb_product_string_switches_to_trace_product_under_feature():
+    text = read(OUROBOROS_MAIN)
+    assert "crate::usb_trace::TRACE_PRODUCT" in text, (
+        "Ouroboros main.rs never references usb_trace::TRACE_PRODUCT, so a "
+        "trace-feature build still enumerates with the plain product string "
+        "and foci-trace-capture cannot find the device"
+    )
+    assert '#[cfg(feature = "trace")]' in text
+
+
 def test_ouroboros_slow_pid_homing_policy_uses_shared_helper():
     # Both boards drive slow-channel maintenance through the shared
     # `ChannelDriver`, not a per-board copy in main.rs -- Ouroboros no longer
