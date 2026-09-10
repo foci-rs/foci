@@ -84,6 +84,55 @@ def test_compare_allows_hardware_constant_value_differences():
     assert board_parity.compare_dictionaries(off, our) == []
 
 
+def test_compare_allows_ouroboros_omitting_empty_reserve_pin_categories():
+    # Ouroboros has no LED or DRV-enable pins to reserve. Its own host-tests
+    # (board_never_declares_an_empty_reserve_pins_category) require it to
+    # omit these constants entirely rather than declare an empty pin list,
+    # since Klipper's mcu_identify treats the empty string as a real
+    # reserved pin. Only their absence specifically on Ouroboros is allowed.
+    off = _dict(
+        config={
+            "CLOCK_FREQ": 84000000,
+            "MCU": "stm32f407",
+            "RECEIVE_WINDOW": 192,
+            "RESERVE_PINS_DRV": "PB0,PB1,PC4,PC5",
+            "RESERVE_PINS_LED": "PD7,PE0,PE1",
+        }
+    )
+    our = _dict(config={"CLOCK_FREQ": 260000000, "MCU": "stm32h723", "RECEIVE_WINDOW": 192})
+    assert board_parity.compare_dictionaries(off, our) == []
+
+
+def test_compare_still_flags_other_constants_missing_from_ouroboros():
+    off = _dict(
+        config={
+            "CLOCK_FREQ": 84000000,
+            "MCU": "stm32f407",
+            "RECEIVE_WINDOW": 192,
+            "SOME_OTHER_CONST": 1,
+        }
+    )
+    our = _dict(config={"CLOCK_FREQ": 260000000, "MCU": "stm32h723", "RECEIVE_WINDOW": 192})
+    problems = board_parity.compare_dictionaries(off, our)
+    assert any("SOME_OTHER_CONST" in p for p in problems)
+
+
+def test_compare_still_flags_reserve_pins_missing_from_openffboard():
+    # The allowance is asymmetric: Ouroboros may omit these, but OpenFFBoard
+    # (which does have LED/DRV pins) must still declare them.
+    off = _dict(config={"CLOCK_FREQ": 84000000, "MCU": "stm32f407", "RECEIVE_WINDOW": 192})
+    our = _dict(
+        config={
+            "CLOCK_FREQ": 260000000,
+            "MCU": "stm32h723",
+            "RECEIVE_WINDOW": 192,
+            "RESERVE_PINS_DRV": "PA0",
+        }
+    )
+    problems = board_parity.compare_dictionaries(off, our)
+    assert any("RESERVE_PINS_DRV" in p and "Ouroboros" in p for p in problems)
+
+
 def test_compare_requires_expected_velocity_limit_capabilities():
     off = _dict(
         config={

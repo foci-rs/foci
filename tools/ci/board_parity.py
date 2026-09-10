@@ -64,6 +64,20 @@ EXPECTED_CONSTANT_VALUE_DIFFERENCES = {
     "VELOCITY_LIMIT_EVIDENCE_CAPABILITY": (1, 0),
 }
 
+# Constants Ouroboros legitimately omits entirely (not merely a differing
+# value): it has no pins in that reserve category, and Klipper's mcu_identify
+# treats an empty pin string as a real reserved pin, so declaring the
+# category empty would collide with that sentinel. Ouroboros omits the whole
+# entry instead -- enforced by its own host-tests
+# (board_never_declares_an_empty_reserve_pins_category). Asymmetric by
+# design: OpenFFBoard, which does have these pins, must still declare them.
+ALLOWED_OUROBOROS_OMITTED_CONSTANTS = frozenset(
+    {
+        "RESERVE_PINS_DRV",
+        "RESERVE_PINS_LED",
+    }
+)
+
 # Enumerations whose CONTENT may differ between boards (hardware topology). The
 # name must still be present in both dictionaries. The dictionary emits the pin
 # enumeration as "pin" (singular); its members are board-specific physical pins,
@@ -86,7 +100,13 @@ def _compare_key_sets(kind: str, off: dict, our: dict) -> list[str]:
 
 
 def _compare_config(off: dict, our: dict) -> list[str]:
-    problems = _compare_key_sets("constant", off, our)
+    problems = []
+    for key in sorted(set(off) - set(our)):
+        if key in ALLOWED_OUROBOROS_OMITTED_CONSTANTS:
+            continue
+        problems.append(f"constant only on OpenFFBoard: {key!r}")
+    for key in sorted(set(our) - set(off)):
+        problems.append(f"constant only on Ouroboros: {key!r}")
     for name in sorted(set(off) & set(our)):
         if name in ALLOWED_CONSTANT_VALUE_DIFFERENCES:
             continue
