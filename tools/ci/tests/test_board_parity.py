@@ -85,21 +85,45 @@ def test_compare_allows_hardware_constant_value_differences():
 
 
 def test_compare_allows_ouroboros_omitting_empty_reserve_pin_categories():
-    # Ouroboros has no LED or DRV-enable pins to reserve. Its own host-tests
-    # (board_never_declares_an_empty_reserve_pins_category) require it to
-    # omit these constants entirely rather than declare an empty pin list,
-    # since Klipper's mcu_identify treats the empty string as a real
-    # reserved pin. Only their absence specifically on Ouroboros is allowed.
+    # Ouroboros has no DRV-enable pins to reserve: the gate drivers are
+    # driven entirely by TMC4671 PWM outputs, with no discrete GPIO enable
+    # line. Its own host-tests (board_never_declares_an_empty_reserve_pins_
+    # category) require it to omit the constant entirely rather than declare
+    # an empty pin list, since Klipper's mcu_identify treats the empty
+    # string as a real reserved pin. Only its absence specifically on
+    # Ouroboros is allowed.
     off = _dict(
         config={
             "CLOCK_FREQ": 84000000,
             "MCU": "stm32f407",
             "RECEIVE_WINDOW": 192,
             "RESERVE_PINS_DRV": "PB0,PB1,PC4,PC5",
-            "RESERVE_PINS_LED": "PD7,PE0,PE1",
         }
     )
     our = _dict(config={"CLOCK_FREQ": 260000000, "MCU": "stm32h723", "RECEIVE_WINDOW": 192})
+    assert board_parity.compare_dictionaries(off, our) == []
+
+
+def test_compare_allows_reserve_pins_led_value_difference():
+    # Unlike RESERVE_PINS_DRV, Ouroboros does have a status LED (PA15) and
+    # declares RESERVE_PINS_LED on both boards -- only the pin value legitimately
+    # differs (hardware topology), covered by ALLOWED_CONSTANT_VALUE_DIFFERENCES.
+    off = _dict(
+        config={
+            "CLOCK_FREQ": 84000000,
+            "MCU": "stm32f407",
+            "RECEIVE_WINDOW": 192,
+            "RESERVE_PINS_LED": "PD7,PE0,PE1",
+        }
+    )
+    our = _dict(
+        config={
+            "CLOCK_FREQ": 260000000,
+            "MCU": "stm32h723",
+            "RECEIVE_WINDOW": 192,
+            "RESERVE_PINS_LED": "PA15",
+        }
+    )
     assert board_parity.compare_dictionaries(off, our) == []
 
 
@@ -115,6 +139,22 @@ def test_compare_still_flags_other_constants_missing_from_ouroboros():
     our = _dict(config={"CLOCK_FREQ": 260000000, "MCU": "stm32h723", "RECEIVE_WINDOW": 192})
     problems = board_parity.compare_dictionaries(off, our)
     assert any("SOME_OTHER_CONST" in p for p in problems)
+
+
+def test_compare_flags_reserve_pins_led_missing_from_ouroboros():
+    # RESERVE_PINS_LED is no longer an allowed omission: Ouroboros must
+    # declare its status LED pin.
+    off = _dict(
+        config={
+            "CLOCK_FREQ": 84000000,
+            "MCU": "stm32f407",
+            "RECEIVE_WINDOW": 192,
+            "RESERVE_PINS_LED": "PD7,PE0,PE1",
+        }
+    )
+    our = _dict(config={"CLOCK_FREQ": 260000000, "MCU": "stm32h723", "RECEIVE_WINDOW": 192})
+    problems = board_parity.compare_dictionaries(off, our)
+    assert any("RESERVE_PINS_LED" in p for p in problems)
 
 
 def test_compare_still_flags_reserve_pins_missing_from_openffboard():
