@@ -173,7 +173,7 @@ def test_compare_still_flags_reserve_pins_missing_from_openffboard():
     assert any("RESERVE_PINS_DRV" in p and "Ouroboros" in p for p in problems)
 
 
-def test_compare_requires_expected_velocity_limit_capabilities():
+def test_compare_requires_matching_velocity_limit_capabilities():
     off = _dict(
         config={
             "CLOCK_FREQ": 84000000,
@@ -187,17 +187,17 @@ def test_compare_requires_expected_velocity_limit_capabilities():
             "CLOCK_FREQ": 260000000,
             "MCU": "stm32h723",
             "RECEIVE_WINDOW": 192,
-            "VELOCITY_LIMIT_EVIDENCE_CAPABILITY": 0,
+            "VELOCITY_LIMIT_EVIDENCE_CAPABILITY": 1,
         }
     )
 
     assert board_parity.compare_dictionaries(off, our) == []
 
-    our["config"]["VELOCITY_LIMIT_EVIDENCE_CAPABILITY"] = 1
+    our["config"]["VELOCITY_LIMIT_EVIDENCE_CAPABILITY"] = 0
     problems = board_parity.compare_dictionaries(off, our)
     assert problems == [
-        "constant 'VELOCITY_LIMIT_EVIDENCE_CAPABILITY' expected "
-        "OpenFFBoard=1 Ouroboros=0, got OpenFFBoard=1 Ouroboros=1"
+        "constant 'VELOCITY_LIMIT_EVIDENCE_CAPABILITY' value differs: "
+        "OpenFFBoard=1 Ouroboros=0"
     ]
 
 
