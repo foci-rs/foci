@@ -196,8 +196,7 @@ def test_compare_requires_matching_velocity_limit_capabilities():
     our["config"]["VELOCITY_LIMIT_EVIDENCE_CAPABILITY"] = 0
     problems = board_parity.compare_dictionaries(off, our)
     assert problems == [
-        "constant 'VELOCITY_LIMIT_EVIDENCE_CAPABILITY' value differs: "
-        "OpenFFBoard=1 Ouroboros=0"
+        "constant 'VELOCITY_LIMIT_EVIDENCE_CAPABILITY' value differs: OpenFFBoard=1 Ouroboros=0"
     ]
 
 
