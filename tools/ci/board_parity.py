@@ -28,6 +28,7 @@ DEFAULT_OPENFFBOARD_SOURCE = "boards/openffboard-fw/src/main.rs"
 DEFAULT_OUROBOROS_SOURCE = "boards/ouroboros-fw/src/main.rs"
 DEFAULT_OPENFFBOARD_INTERRUPTS = "boards/openffboard-fw/src/interrupts.rs"
 DEFAULT_OUROBOROS_INTERRUPTS = "boards/ouroboros-fw/src/interrupts.rs"
+DEFAULT_SHARED_OTG_SOURCE = "shared/foci-usb-stm32/src/otg.rs"
 
 REQUIRED_RTIC_TASK_PRIORITIES = {
     "tmc_control": 1,
@@ -39,7 +40,12 @@ _RTIC_TASK_RE = re.compile(
     r"#\[task\((?P<args>.*?)\)\]\s*async\s+fn\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)",
     re.DOTALL,
 )
+_RTIC_ANY_TASK_RE = re.compile(
+    r"#\[task\((?P<args>.*?)\)\]\s*(?:async\s+)?fn\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)",
+    re.DOTALL,
+)
 _RTIC_PRIORITY_RE = re.compile(r"\bpriority\s*=\s*(?P<priority>\d+)\b")
+_RTIC_BIND_RE = re.compile(r"\bbinds\s*=\s*(?P<vector>[A-Za-z_][A-Za-z0-9_]*)\b")
 
 
 # Constants whose VALUE may differ between boards (hardware topology). Their
@@ -222,6 +228,121 @@ def check_no_isr_logging(source: str, board: str) -> list[str]:
     return []
 
 
+def _function_body(source: str, signature: str) -> str | None:
+    signature_start = source.find(signature)
+    if signature_start == -1:
+        return None
+    body_start = source.find("{", signature_start + len(signature))
+    if body_start == -1:
+        return None
+
+    depth = 0
+    for index in range(body_start, len(source)):
+        if source[index] == "{":
+            depth += 1
+        elif source[index] == "}":
+            depth -= 1
+            if depth == 0:
+                return source[body_start + 1 : index]
+    return None
+
+
+def _rtic_task_args(source: str, task_name: str) -> str | None:
+    for task_match in _RTIC_ANY_TASK_RE.finditer(source):
+        if task_match.group("name") == task_name:
+            return task_match.group("args")
+    return None
+
+
+def _check_otg_task(
+    board: str,
+    source: str,
+    irq_task: str,
+    vector: str,
+) -> list[str]:
+    problems = []
+    irq_args = _rtic_task_args(source, irq_task)
+    usb_args = _rtic_task_args(source, "usb_task")
+    if irq_args is None:
+        return [f"{board} RTIC OTG task {irq_task!r} is missing"]
+    if usb_args is None:
+        return [f"{board} RTIC USB task 'usb_task' is missing"]
+
+    irq_body = _function_body(source, f"fn {irq_task}(")
+    wrapper_call = "crate::interrupts::otg_fs_irq();"
+    if irq_body is None or irq_body.count(wrapper_call) != 1:
+        problems.append(f"{board} RTIC OTG task must enter its board wrapper exactly once")
+
+    irq_bind = _RTIC_BIND_RE.search(irq_args)
+    if irq_bind is None or irq_bind.group("vector") != vector:
+        actual = irq_bind.group("vector") if irq_bind is not None else None
+        problems.append(f"{board} RTIC OTG task binds {actual!r}, expected {vector!r}")
+
+    irq_priority_match = _RTIC_PRIORITY_RE.search(irq_args)
+    usb_priority_match = _RTIC_PRIORITY_RE.search(usb_args)
+    irq_priority = int(irq_priority_match.group("priority")) if irq_priority_match else None
+    usb_priority = int(usb_priority_match.group("priority")) if usb_priority_match else None
+    if irq_priority != 3:
+        problems.append(f"{board} RTIC OTG task priority is {irq_priority}, expected 3")
+    if usb_priority != 2:
+        problems.append(f"{board} RTIC USB task priority is {usb_priority}, expected 2")
+    if irq_priority is not None and usb_priority is not None and usb_priority >= irq_priority:
+        problems.append(
+            f"{board} RTIC USB task priority {usb_priority} is not below "
+            f"OTG priority {irq_priority}"
+        )
+    return problems
+
+
+def check_usb_handoff(
+    shared_otg_source: str,
+    openffboard_source: str,
+    ouroboros_source: str,
+    openffboard_interrupts: str,
+    ouroboros_interrupts: str,
+) -> list[str]:
+    """Return messages for violations of the ISR-to-USB-task handoff contract."""
+    problems = []
+    handler = _function_body(shared_otg_source, "pub fn irq_handler()")
+    terminal_statement = None
+    if handler is not None:
+        terminal_statement = next(
+            (
+                line.strip()
+                for line in reversed(handler.splitlines())
+                if line.strip() and not line.strip().startswith("//")
+            ),
+            None,
+        )
+    if terminal_statement != "cortex_m::asm::dmb();":
+        problems.append("shared OTG irq_handler is missing its terminal data memory barrier")
+
+    for board, interrupts in (
+        ("OpenFFBoard", openffboard_interrupts),
+        ("Ouroboros", ouroboros_interrupts),
+    ):
+        wrapper = _function_body(interrupts, "pub fn otg_fs_irq()")
+        if wrapper is None:
+            problems.append(f"{board} OTG wrapper 'otg_fs_irq' is missing")
+            continue
+        handler_call = "foci_usb_stm32::irq_handler();"
+        wake_call = "USB_WAKE.signal(());"
+        if wrapper.count(handler_call) != 1:
+            problems.append(f"{board} OTG wrapper must call the shared handler exactly once")
+        if wrapper.count(wake_call) != 1:
+            problems.append(f"{board} OTG wrapper must signal the USB task exactly once")
+        if (
+            wrapper.count(handler_call) == 1
+            and wrapper.count(wake_call) == 1
+            and wrapper.index(wake_call) < wrapper.index(handler_call)
+        ):
+            problems.append(f"{board} OTG wrapper wakes the USB task before handler completion")
+
+    problems += _check_otg_task("OpenFFBoard", openffboard_source, "otg_fs_irq", "OTG_FS")
+    problems += _check_otg_task("Ouroboros", ouroboros_source, "otg_hs_irq", "OTG_HS")
+    return problems
+
+
 def find_dictionary_json(blob: bytes) -> dict:
     """Locate and parse the uncompressed dictionary JSON in a byte blob.
 
@@ -325,6 +446,12 @@ def main(argv: list[str] | None = None) -> int:
         default=Path(DEFAULT_OUROBOROS_INTERRUPTS),
         help="path to the Ouroboros ISR-body source",
     )
+    parser.add_argument(
+        "--shared-otg-source",
+        type=Path,
+        default=Path(DEFAULT_SHARED_OTG_SOURCE),
+        help="path to the shared STM32 OTG driver source",
+    )
     args = parser.parse_args(argv)
 
     for label, path in (
@@ -346,6 +473,7 @@ def main(argv: list[str] | None = None) -> int:
         ("Ouroboros", args.ouroboros_source),
         ("OpenFFBoard", args.openffboard_interrupts),
         ("Ouroboros", args.ouroboros_interrupts),
+        ("shared OTG", args.shared_otg_source),
     ):
         if not path.is_file():
             print(f"error: {label} source not found at {path}", file=sys.stderr)
@@ -370,6 +498,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     problems += check_no_isr_logging(args.openffboard_interrupts.read_text(), "OpenFFBoard")
     problems += check_no_isr_logging(args.ouroboros_interrupts.read_text(), "Ouroboros")
+    problems += check_usb_handoff(
+        args.shared_otg_source.read_text(),
+        args.openffboard_source.read_text(),
+        args.ouroboros_source.read_text(),
+        args.openffboard_interrupts.read_text(),
+        args.ouroboros_interrupts.read_text(),
+    )
 
     if problems:
         print("Board parity gate FAILED:", file=sys.stderr)
@@ -378,7 +513,8 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     print(
-        "Board parity gate passed: protocol surfaces and RTIC priorities match, no ISR logs defmt."
+        "Board parity gate passed: protocol surfaces, RTIC priorities, and USB handoff match; "
+        "no ISR logs defmt."
     )
     return 0
 

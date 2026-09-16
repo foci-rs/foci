@@ -1,6 +1,7 @@
 """Unit tests for the board parity gate."""
 
 import json
+from pathlib import Path
 
 import board_parity
 import pytest
@@ -270,6 +271,58 @@ def _runtime_source(*, tmc_priority=1, stats_priority=1, watchdog_priority=2):
     """
 
 
+def _shared_otg_source(terminal_statement="cortex_m::asm::dmb();"):
+    return f"""
+    pub fn irq_handler() {{
+        writel(reg(GINTMSK), 0);
+        {terminal_statement}
+    }}
+    """
+
+
+def _usb_main_source(
+    irq_task,
+    vector,
+    *,
+    irq_priority=3,
+    usb_priority=2,
+    include_wrapper_call=True,
+):
+    wrapper_call = "crate::interrupts::otg_fs_irq();" if include_wrapper_call else ""
+    return f"""
+    #[task(binds = {vector}, priority = {irq_priority})]
+    fn {irq_task}(_ctx: {irq_task}::Context) {{
+        {wrapper_call}
+    }}
+
+    #[task(priority = {usb_priority}, shared = [app_state])]
+    async fn usb_task(_ctx: usb_task::Context) {{}}
+    """
+
+
+def _usb_interrupt_source(*, include_handler=True, wake_first=False):
+    handler = "foci_usb_stm32::irq_handler();" if include_handler else ""
+    wake = "USB_WAKE.signal(());"
+    statements = (wake, handler) if wake_first else (handler, wake)
+    return "pub fn otg_fs_irq() {\n" + "\n".join(statements) + "\n}\n"
+
+
+def _check_usb_handoff(
+    shared_otg_source=None,
+    openffboard_source=None,
+    ouroboros_source=None,
+    openffboard_interrupts=None,
+    ouroboros_interrupts=None,
+):
+    return board_parity.check_usb_handoff(
+        shared_otg_source or _shared_otg_source(),
+        openffboard_source or _usb_main_source("otg_fs_irq", "OTG_FS"),
+        ouroboros_source or _usb_main_source("otg_hs_irq", "OTG_HS"),
+        openffboard_interrupts or _usb_interrupt_source(),
+        ouroboros_interrupts or _usb_interrupt_source(),
+    )
+
+
 def test_compare_runtime_priorities_accepts_watchdog_above_commissioning():
     source = _runtime_source()
     assert board_parity.compare_runtime_task_priorities(source, source) == []
@@ -279,6 +332,65 @@ def test_compare_runtime_priorities_rejects_watchdog_at_commissioning_priority()
     openffboard = _runtime_source(watchdog_priority=1)
     problems = board_parity.compare_runtime_task_priorities(openffboard, _runtime_source())
     assert problems == ["OpenFFBoard RTIC task 'watchdog' priority is 1, expected 2"]
+
+
+def test_usb_handoff_accepts_terminal_barrier_ordered_wrappers_and_lower_consumers():
+    assert _check_usb_handoff() == []
+
+
+@pytest.mark.parametrize(
+    "terminal_statement",
+    ["", "cortex_m::asm::dmb();\n        notify_wake();"],
+)
+def test_usb_handoff_rejects_missing_or_nonterminal_barrier(terminal_statement):
+    problems = _check_usb_handoff(shared_otg_source=_shared_otg_source(terminal_statement))
+    assert problems == ["shared OTG irq_handler is missing its terminal data memory barrier"]
+
+
+def test_usb_handoff_rejects_missing_shared_handler_call():
+    problems = _check_usb_handoff(
+        openffboard_interrupts=_usb_interrupt_source(include_handler=False)
+    )
+    assert problems == ["OpenFFBoard OTG wrapper must call the shared handler exactly once"]
+
+
+def test_usb_handoff_rejects_bound_task_that_skips_board_wrapper():
+    openffboard_source = _usb_main_source("otg_fs_irq", "OTG_FS", include_wrapper_call=False)
+    problems = _check_usb_handoff(openffboard_source=openffboard_source)
+    assert problems == ["OpenFFBoard RTIC OTG task must enter its board wrapper exactly once"]
+
+
+def test_usb_handoff_rejects_wake_before_shared_handler():
+    problems = _check_usb_handoff(openffboard_interrupts=_usb_interrupt_source(wake_first=True))
+    assert problems == ["OpenFFBoard OTG wrapper wakes the USB task before handler completion"]
+
+
+@pytest.mark.parametrize(
+    ("irq_priority", "usb_priority"),
+    [(2, 2), (2, 3)],
+)
+def test_usb_handoff_rejects_equal_or_reversed_priority(irq_priority, usb_priority):
+    openffboard_source = _usb_main_source(
+        "otg_fs_irq",
+        "OTG_FS",
+        irq_priority=irq_priority,
+        usb_priority=usb_priority,
+    )
+    problems = _check_usb_handoff(openffboard_source=openffboard_source)
+    assert any("OpenFFBoard RTIC USB task priority" in problem for problem in problems)
+    assert any("is not below OTG priority" in problem for problem in problems)
+
+
+def test_repository_sources_satisfy_usb_handoff_contract():
+    workspace = Path(__file__).resolve().parents[3]
+    problems = board_parity.check_usb_handoff(
+        (workspace / board_parity.DEFAULT_SHARED_OTG_SOURCE).read_text(),
+        (workspace / board_parity.DEFAULT_OPENFFBOARD_SOURCE).read_text(),
+        (workspace / board_parity.DEFAULT_OUROBOROS_SOURCE).read_text(),
+        (workspace / board_parity.DEFAULT_OPENFFBOARD_INTERRUPTS).read_text(),
+        (workspace / board_parity.DEFAULT_OUROBOROS_INTERRUPTS).read_text(),
+    )
+    assert problems == []
 
 
 def test_check_no_isr_logging_accepts_clean_source():
