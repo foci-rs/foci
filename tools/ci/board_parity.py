@@ -36,10 +36,6 @@ REQUIRED_RTIC_TASK_PRIORITIES = {
     "watchdog": 2,
 }
 
-_RTIC_TASK_RE = re.compile(
-    r"#\[task\((?P<args>.*?)\)\]\s*async\s+fn\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)",
-    re.DOTALL,
-)
 _RTIC_ANY_TASK_RE = re.compile(
     r"#\[task\((?P<args>.*?)\)\]\s*(?:async\s+)?fn\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)",
     re.DOTALL,
@@ -190,7 +186,7 @@ def compare_dictionaries(openffboard: dict, ouroboros: dict) -> list[str]:
 
 def _extract_rtic_task_priorities(source: str) -> dict[str, int]:
     priorities = {}
-    for task_match in _RTIC_TASK_RE.finditer(source):
+    for task_match in _RTIC_ANY_TASK_RE.finditer(source):
         priority_match = _RTIC_PRIORITY_RE.search(task_match.group("args"))
         if priority_match is not None:
             priorities[task_match.group("name")] = int(priority_match.group("priority"))

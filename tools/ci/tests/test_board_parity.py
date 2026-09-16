@@ -328,6 +328,20 @@ def test_compare_runtime_priorities_accepts_watchdog_above_commissioning():
     assert board_parity.compare_runtime_task_priorities(source, source) == []
 
 
+def test_extract_runtime_priorities_does_not_span_non_async_task():
+    source = """
+    #[task(binds = OTG_FS, priority = 3)]
+    fn otg_fs_irq(_ctx: otg_fs_irq::Context) {}
+
+    #[task(priority = 2, shared = [app_state])]
+    async fn usb_task(_ctx: usb_task::Context) {}
+    """
+
+    priorities = board_parity._extract_rtic_task_priorities(source)
+
+    assert priorities["usb_task"] == 2
+
+
 def test_compare_runtime_priorities_rejects_watchdog_at_commissioning_priority():
     openffboard = _runtime_source(watchdog_priority=1)
     problems = board_parity.compare_runtime_task_priorities(openffboard, _runtime_source())
