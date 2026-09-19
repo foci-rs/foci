@@ -4,7 +4,8 @@
     "amplitude_up": 1,
     "amplitude_down": 2,
     "robustness_reversal": 9,
-    "integral_resume": 8
+    "integral_resume": 8,
+    "position_tune": 10
   },
   "breakaway": {
     "0": "breakaway_probe",
