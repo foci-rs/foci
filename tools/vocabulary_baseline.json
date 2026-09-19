@@ -44,6 +44,10 @@
       "label": "Reversal standstill robustness gate",
       "trace_ident": "ReversalStandstillRobustnessGate"
     },
+    "26": {
+      "label": "Gain floor measurement",
+      "trace_ident": "GainFloorMeasurement"
+    },
     "3": {
       "label": "Phase wiring",
       "trace_ident": "PhaseWiringCheck"
