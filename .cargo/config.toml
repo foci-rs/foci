@@ -3,6 +3,10 @@ runner = "probe-rs run --chip STM32F407VG"
 
 [env]
 DEFMT_LOG = "info"
+# A full 84-sample gain-floor capture dump is about 1 KB on the defmt wire per
+# torque step; the default 1 KB RTT buffer drops part of it before the host
+# drains.
+DEFMT_RTT_BUFFER_SIZE = "4096"
 
 [net]
 git-fetch-with-cli = true
