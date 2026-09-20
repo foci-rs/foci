@@ -50,8 +50,16 @@ def strip_cfg_test_items(source: str) -> str:
 def _item_end(source: str, pos: int) -> int:
     depth = 0
     seen_brace = False
-    while pos < len(source):
+    length = len(source)
+    while pos < length:
         char = source[pos]
+        skip_to = _skip_line_comment(source, pos)
+        skip_to = skip_to if skip_to is not None else _skip_block_comment(source, pos)
+        skip_to = skip_to if skip_to is not None else _skip_string_literal(source, pos)
+        skip_to = skip_to if skip_to is not None else _skip_char_literal(source, pos)
+        if skip_to is not None:
+            pos = skip_to
+            continue
         if char == "{":
             depth += 1
             seen_brace = True
@@ -62,7 +70,53 @@ def _item_end(source: str, pos: int) -> int:
         elif char == ";" and not seen_brace:
             return pos + 1
         pos += 1
-    return len(source)
+    return length
+
+
+def _skip_line_comment(source: str, pos: int) -> int | None:
+    if source[pos : pos + 2] != "//":
+        return None
+    length = len(source)
+    newline = source.find("\n", pos)
+    return length if newline < 0 else newline
+
+
+def _skip_block_comment(source: str, pos: int) -> int | None:
+    if source[pos : pos + 2] != "/*":
+        return None
+    length = len(source)
+    end_comment = source.find("*/", pos + 2)
+    return length if end_comment < 0 else end_comment + 2
+
+
+def _skip_string_literal(source: str, pos: int) -> int | None:
+    if source[pos] != '"':
+        return None
+    length = len(source)
+    cursor = pos + 1
+    while cursor < length and source[cursor] != '"':
+        cursor += 2 if source[cursor] == "\\" else 1
+    return cursor + 1
+
+
+def _skip_char_literal(source: str, pos: int) -> int | None:
+    if source[pos] != "'":
+        return None
+    length = len(source)
+    inner = pos + 1
+    if inner < length and source[inner] == "\\":
+        inner += 1
+        if inner < length and source[inner] == "u" and source[inner + 1 : inner + 2] == "{":
+            brace_end = source.find("}", inner)
+            if brace_end < 0:
+                return None
+            inner = brace_end
+        inner += 1
+    else:
+        inner += 1
+    if inner < length and source[inner] == "'":
+        return inner + 1
+    return None
 
 
 def find_clear_sites(source: str) -> list[int]:
