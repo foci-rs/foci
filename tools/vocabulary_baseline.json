@@ -49,6 +49,10 @@
       "label": "Gain floor measurement",
       "trace_ident": "GainFloorMeasurement"
     },
+    "27": {
+      "label": "Position tune",
+      "trace_ident": "PositionTune"
+    },
     "3": {
       "label": "Phase wiring",
       "trace_ident": "PhaseWiringCheck"
