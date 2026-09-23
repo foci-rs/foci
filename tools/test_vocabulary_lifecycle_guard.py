@@ -70,21 +70,12 @@ SUBSTRING_TOKENS = (
 # Files that intentionally retain a retired token, keyed by path relative to
 # this file's parent directory (the `foci` aggregate root):
 #
-# - The two board host-tests assert that removed Stage-B
-#   reproduction reply families are NOT forwarded; the whole point of
-#   `board_does_not_forward_removed_stage_b_reply_families` is to keep
-#   saying the old names, so it can assert their absence from the wire.
-# - `test_commission_reply_sink_guard.py` asserts the same removed families
-#   are absent from the shared reply sink.
 # - The two foci-trace tests translate a handful of fields read out of an
 #   archived pre-rename capture (`docs/artifacts/trace-captures/...`) to
 #   the current names before validating it; per the epic's hard-break
 #   decode policy no back-compat is owed to that capture, so the old key is
 #   read once, by name, and immediately renamed.
 ALLOWLIST: dict[str, set[str]] = {
-    "boards/openffboard-fw/host-tests/src/lib.rs": {"stage_b"},
-    "boards/ouroboros-fw/host-tests/src/lib.rs": {"stage_b"},
-    "tools/test_commission_reply_sink_guard.py": {"stage_b"},
     "host/foci-trace/tests/test_velocity_integral.py": {"stage_b", "final_p"},
     "host/foci-trace/tests/test_velocity_measurement.py": {"stage_b"},
 }

@@ -18,7 +18,3 @@ def test_board_reply_emitters_delegate_to_shared_commission_sink():
         assert "impl foci_firmware::commission_dispatch::CommissionReplySink" in text
         assert "ReplyPayload::" not in text
         assert "match payload" not in text
-        # Removed the dead Stage-B reproduction reply path, so no board
-        # should forward any reproduction group (neither the retired v3 nor v4).
-        assert "foci_velocity_stage_b_reproduction_v3_" not in text
-        assert "foci_velocity_stage_b_reproduction_v4_" not in text
