@@ -26,11 +26,11 @@
       "trace_ident": "ClosedLoopActivation"
     },
     "18": {
-      "label": "Breakaway proportional acquisition",
+      "label": "Finding proportional gain (velocity)",
       "trace_ident": "BreakawayProportionalAcquisition"
     },
     "19": {
-      "label": "Integral gain response characterization",
+      "label": "Finding integral gain (velocity)",
       "trace_ident": "IntegralGainResponseCharacterization"
     },
     "2": {
@@ -42,7 +42,7 @@
       "trace_ident": "FixedGainAmplitudeValidation"
     },
     "21": {
-      "label": "Reversal standstill robustness gate",
+      "label": "Verifying gain under reversal/standstill",
       "trace_ident": "ReversalStandstillRobustnessGate"
     },
     "26": {
