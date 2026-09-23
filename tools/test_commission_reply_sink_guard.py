@@ -18,3 +18,17 @@ def test_board_reply_emitters_delegate_to_shared_commission_sink():
         assert "impl foci_firmware::commission_dispatch::CommissionReplySink" in text
         assert "ReplyPayload::" not in text
         assert "match payload" not in text
+
+
+def test_board_replies_do_not_forward_removed_reply_fragments():
+    # These three fragment names are not covered by
+    # tools/test_vocabulary_lifecycle_guard.py's retired-vocabulary token
+    # scan, unlike the rest of the removed reply family.
+    for rel_path in BOARD_REPLY_FILES:
+        text = (ROOT / rel_path).read_text()
+        for removed in (
+            "structured_boundary",
+            "directional_region_core",
+            "joint_region",
+        ):
+            assert removed not in text, f"retained removed reply fragment {removed}"
