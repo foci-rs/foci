@@ -1,0 +1,28 @@
+/*
+ * FOCI brand palette, taken from the logo SVGs. Starlight's default
+ * :root block is its dark-mode palette; :root[data-theme='light']
+ * overrides it for light mode. Only the tokens that carry brand color
+ * are overridden — layout/typography tokens are left at Starlight's
+ * defaults.
+ */
+:root {
+	--sl-color-accent-low: #123c1c;
+	--sl-color-accent: #39ff5c;
+	--sl-color-accent-high: #a9ffbc;
+	--sl-color-white: #f7f7f4;
+	--sl-color-gray-1: #d1d5db;
+	--sl-color-gray-2: #9ca3af;
+	--sl-color-gray-3: #6b7280;
+	--sl-color-black: #0f1830;
+}
+
+:root[data-theme='light'] {
+	--sl-color-accent-low: #d3f6dc;
+	--sl-color-accent: #1ec947;
+	--sl-color-accent-high: #0d6b21;
+	--sl-color-white: #0f1830;
+	--sl-color-gray-1: #1f2a44;
+	--sl-color-gray-6: #e7e9ec;
+	--sl-color-gray-7: #f7f7f4;
+	--sl-color-black: #f7f7f4;
+}
