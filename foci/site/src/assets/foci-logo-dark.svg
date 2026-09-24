@@ -1,0 +1,53 @@
+<svg width="680" height="280" viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="FOCI - Field Oriented Control Interface">
+<title>FOCI</title>
+<desc>FOCI wordmark with stator and rotating field vector forming the letter O.</desc>
+<defs>
+<style>
+.bg { fill: #0f1830; }
+.midnight { fill: #0f1830; }
+.grey-med { fill: #6b7280; }
+.grey-light { fill: #d1d5db; }
+.neon { fill: #39ff5c; }
+.neon-stroke { stroke: #39ff5c; }
+.grey-med-stroke { stroke: #6b7280; }
+.wm { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-weight: 600; font-size: 88px; letter-spacing: -2px; }
+.tag { font-family: 'Inter', system-ui, sans-serif; font-weight: 500; font-size: 13px; letter-spacing: 4px; }
+</style>
+</defs>
+<rect x="0" y="0" width="680" height="280" class="bg"/>
+<text x="40" y="148" class="wm grey-light">F</text>
+<g transform="translate(170,104)">
+<circle cx="0" cy="0" r="56" fill="none" class="grey-med-stroke" stroke-width="1"/>
+<circle cx="0" cy="0" r="50" fill="none" class="grey-med-stroke" stroke-width="0.5" stroke-dasharray="2 4"/>
+<g class="grey-light">
+<rect x="-6" y="-56" width="12" height="14" rx="2"/>
+<rect x="-6" y="42" width="12" height="14" rx="2"/>
+<g transform="rotate(60)"><rect x="-6" y="-56" width="12" height="14" rx="2"/></g>
+<g transform="rotate(60)"><rect x="-6" y="42" width="12" height="14" rx="2"/></g>
+<g transform="rotate(120)"><rect x="-6" y="-56" width="12" height="14" rx="2"/></g>
+<g transform="rotate(120)"><rect x="-6" y="42" width="12" height="14" rx="2"/></g>
+</g>
+<g class="grey-med" opacity="0.85">
+<rect x="-3" y="-44" width="6" height="10" rx="1"/>
+<rect x="-3" y="34" width="6" height="10" rx="1"/>
+<g transform="rotate(60)"><rect x="-3" y="-44" width="6" height="10" rx="1"/></g>
+<g transform="rotate(60)"><rect x="-3" y="34" width="6" height="10" rx="1"/></g>
+<g transform="rotate(120)"><rect x="-3" y="-44" width="6" height="10" rx="1"/></g>
+<g transform="rotate(120)"><rect x="-3" y="34" width="6" height="10" rx="1"/></g>
+</g>
+<circle cx="0" cy="0" r="26" class="midnight" stroke="#39ff5c" stroke-width="1.5"/>
+<g transform="rotate(-45)">
+<ellipse cx="0" cy="0" rx="22" ry="9" class="neon" opacity="0.9"/>
+<circle cx="0" cy="0" r="4" class="midnight"/>
+</g>
+<g transform="rotate(-45)">
+<line x1="0" y1="0" x2="78" y2="0" class="neon-stroke" stroke-width="2.5" stroke-linecap="round"/>
+<polygon points="78,0 70,-5 70,5" class="neon"/>
+</g>
+<text x="56" y="-44" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#39ff5c">i_q</text>
+</g>
+<text x="248" y="148" class="wm grey-light">CI</text>
+<line x1="40" y1="190" x2="640" y2="190" class="grey-med-stroke" stroke-width="0.5"/>
+<text x="40" y="216" class="tag grey-med">FIELD ORIENTED CONTROL INTERFACE</text>
+<text x="40" y="244" class="tag neon">RUST · TMC4671 · KLIPPER</text>
+</svg>
