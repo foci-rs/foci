@@ -1,0 +1,46 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="FOCI">
+<title>FOCI icon</title>
+<desc>Square FOCI icon with stator slots and rotating field vector.</desc>
+<defs>
+<style>
+.bg2 { fill: #1b2644; }
+.gm { fill: #6b7280; }
+.gl { fill: #d1d5db; }
+.neon2 { fill: #39ff5c; }
+.gm-s { stroke: #6b7280; }
+.neon-s { stroke: #39ff5c; }
+</style>
+</defs>
+<rect x="0" y="0" width="400" height="400" rx="56" class="bg2"/>
+<circle cx="200" cy="200" r="142" fill="none" class="gm-s" stroke-width="1.4"/>
+<circle cx="200" cy="200" r="126" fill="none" class="gm-s" stroke-width="0.6" stroke-dasharray="3 5"/>
+<g transform="translate(200,200)">
+<g class="gl">
+<rect x="-15" y="-142" width="30" height="32" rx="3"/>
+<rect x="-15" y="110" width="30" height="32" rx="3"/>
+<g transform="rotate(60)"><rect x="-15" y="-142" width="30" height="32" rx="3"/></g>
+<g transform="rotate(60)"><rect x="-15" y="110" width="30" height="32" rx="3"/></g>
+<g transform="rotate(120)"><rect x="-15" y="-142" width="30" height="32" rx="3"/></g>
+<g transform="rotate(120)"><rect x="-15" y="110" width="30" height="32" rx="3"/></g>
+</g>
+<g class="gm">
+<rect x="-8" y="-114" width="16" height="26" rx="2"/>
+<rect x="-8" y="88" width="16" height="26" rx="2"/>
+<g transform="rotate(60)"><rect x="-8" y="-114" width="16" height="26" rx="2"/></g>
+<g transform="rotate(60)"><rect x="-8" y="88" width="16" height="26" rx="2"/></g>
+<g transform="rotate(120)"><rect x="-8" y="-114" width="16" height="26" rx="2"/></g>
+<g transform="rotate(120)"><rect x="-8" y="88" width="16" height="26" rx="2"/></g>
+</g>
+<circle cx="0" cy="0" r="70" class="bg2" stroke="#39ff5c" stroke-width="2.8"/>
+<g transform="rotate(-45)">
+<ellipse cx="0" cy="0" rx="58" ry="24" class="neon2"/>
+<rect x="-12" y="-70" width="24" height="16" class="bg2"/>
+<rect x="-12" y="54" width="24" height="16" class="bg2"/>
+</g>
+<g transform="rotate(-45)">
+<line x1="0" y1="0" x2="186" y2="0" class="neon-s" stroke-width="7" stroke-linecap="round"/>
+<polygon points="190,0 172,-14 172,14" class="neon2"/>
+</g>
+<circle cx="0" cy="0" r="8" class="bg2"/>
+</g>
+</svg>
