@@ -28,6 +28,8 @@ jobs:
         with:
           path: site
           node-version: 22
+        env:
+          ASTRO_TELEMETRY_DISABLED: '1'
 
   deploy:
     needs: build
