@@ -9,8 +9,7 @@ export default defineConfig({
       description:
         'Field Oriented Control Interface — Klipper-compatible MCU firmware for TMC4671 FOC servo controllers.',
       logo: {
-        light: './src/assets/foci-logo-light.svg',
-        dark: './src/assets/foci-logo-dark.svg',
+        src: './src/assets/foci-icon.svg',
         replacesTitle: true,
       },
       favicon: '/favicon.svg',
