@@ -35,7 +35,18 @@ export default defineConfig({
         },
       ],
       customCss: ['./src/styles/custom.css'],
-      sidebar: [],
+      sidebar: [
+        { label: 'Home', link: '/' },
+        {
+          label: 'Getting Started',
+          items: [
+            { label: 'Installation', slug: 'getting-started/installation' },
+            { label: 'Bring-up', slug: 'getting-started/bring-up' },
+          ],
+        },
+        { label: 'Config Reference', slug: 'config-reference' },
+        { label: 'Troubleshooting', slug: 'troubleshooting' },
+      ],
     }),
   ],
 });
