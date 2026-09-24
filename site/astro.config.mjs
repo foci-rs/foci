@@ -11,7 +11,6 @@ export default defineConfig({
       logo: {
         light: './src/assets/foci-icon-light.svg',
         dark: './src/assets/foci-icon-dark.svg',
-        replacesTitle: true,
       },
       favicon: '/favicon.svg',
       head: [
