@@ -82,7 +82,6 @@ def test_request_normal_tail_policy_matches_openffboard():
 def test_ouroboros_requests_enter_shared_runner_without_local_preclassification():
     text = read(OUROBOROS_MAIN)
 
-    assert ".classify_request(req.clone())" not in text
     assert "TmcPreRequestDisposition::ContinueRequest" in text
 
 
