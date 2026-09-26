@@ -58,6 +58,7 @@ foci-usb-stm32 = { path = "shared/foci-usb-stm32" }
 
 [patch."https://github.com/foci-rs/foci-firmware"]
 foci-firmware = { path = "shared/foci-firmware" }
+foci-firmware-macros = { path = "shared/foci-firmware/macros" }
 
 [workspace.lints.rust]
 unsafe_op_in_unsafe_fn = "deny"
