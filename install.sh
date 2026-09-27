@@ -6,7 +6,12 @@ foci_bootstrap() {
     local version="" args=()
     while [ $# -gt 0 ]; do
         case "$1" in
-            --version) version="$2"; shift 2 ;;
+            --version)
+                if [ $# -lt 2 ]; then
+                    echo "--version requires a value" >&2
+                    return 1
+                fi
+                version="$2"; shift 2 ;;
             *) args+=("$1"); shift ;;
         esac
     done

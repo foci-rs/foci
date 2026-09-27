@@ -70,6 +70,12 @@ teardown() { rm -rf "$TEST_DIR"; }
   [ ! -f "$TEST_DIR/exec.log" ]
 }
 
+@test "foci_bootstrap fails with a clear error when --version has no value" {
+  run timeout 5 bash -c "source $BATS_TEST_DIRNAME/install.sh; foci_bootstrap --version"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"--version requires a value"* ]]
+}
+
 @test "foci_bootstrap fails clearly when the GitHub API is unreachable" {
   curl() {
     case "$*" in
