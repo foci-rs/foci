@@ -70,11 +70,11 @@ jobs:
           # Each generated target must be tracked (a deleted file regenerates as
           # untracked, which `git diff` would not catch).
           git -C shared/foci-firmware ls-files --error-unmatch src/commissioning/vocabulary_generated.rs
-          git -C host/klipper-foci ls-files --error-unmatch _vocabulary_generated.py
+          git -C host/klipper-foci ls-files --error-unmatch klipper_foci/klipper_foci/_vocabulary_generated.py
           git -C host/foci-trace ls-files --error-unmatch foci_trace/_vocabulary_generated.py
           python tools/gen_commissioning_vocabulary.py
           git -C shared/foci-firmware diff --exit-code -- src/commissioning/vocabulary_generated.rs
-          git -C host/klipper-foci diff --exit-code -- _vocabulary_generated.py
+          git -C host/klipper-foci diff --exit-code -- klipper_foci/klipper_foci/_vocabulary_generated.py
           git -C host/foci-trace diff --exit-code -- foci_trace/_vocabulary_generated.py
       - name: cargo build (openffboard trace diagnostic, release)
         run: cargo build -p openffboard-fw --target thumbv7em-none-eabi --release --features trace

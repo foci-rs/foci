@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "shared/foci-firmware/src/commissioning/vocabulary.toml"
 RUST_OUT = ROOT / "shared/foci-firmware/src/commissioning/vocabulary_generated.rs"
-KLIPPER_OUT = ROOT / "host/klipper-foci/_vocabulary_generated.py"
+KLIPPER_OUT = ROOT / "host/klipper-foci/klipper_foci/klipper_foci/_vocabulary_generated.py"
 TRACE_OUT = ROOT / "host/foci-trace/foci_trace/_vocabulary_generated.py"
 
 RUST_HEADER = (
