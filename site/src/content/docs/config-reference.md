@@ -21,10 +21,11 @@ encoder_ppr:
 #encoder_direction: default
 #   Set to `reversed` if FOCI_SELFTEST reports "encoder_direction
 #   looks inverted".
-#homing_current: 0
-#   Current in amps used while homing against a sensorless virtual
-#   endstop. 0 disables the homing-current clamp. Must stay below
-#   run_current if set.
+#homing_current:
+#   Reduced current in amps used while homing. Optional with a
+#   physical endstop, where omitting it homes at run_current. Required
+#   for sensorless homing. Must be above 0 and at least 0.05 below
+#   run_current.
 #stall_ceiling_mm: 1.0
 #   Sensorless-homing stall detection. A fixed following-error limit
 #   in mm. Crossing it always counts as a stall, from the first moment
