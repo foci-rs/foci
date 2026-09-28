@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build ${{ matrix.board }} (${{ matrix.flavor }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - board: openffboard-fw
+            target: thumbv7em-none-eabi
+          - board: ouroboros-fw
+            target: thumbv7em-none-eabihf
+        flavor: [prod, trace]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          token: ${{ secrets.CARGO_PRIVATE_DEPS_TOKEN }}
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          targets: ${{ matrix.target }}
+          components: llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+      - name: Configure cargo for private foci-rs deps (fallback)
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.CARGO_PRIVATE_DEPS_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          mkdir -p ~/.cargo
+          printf '[net]\ngit-fetch-with-cli = true\n' >> ~/.cargo/config.toml
+      - name: Install cargo-binutils
+        run: cargo install cargo-binutils --locked
+      - name: Derive release version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+      - name: Build and extract (prod)
+        if: matrix.flavor == 'prod'
+        run: |
+          set -euo pipefail
+          cargo build -p ${{ matrix.board }} --release --target ${{ matrix.target }}
+          out="${{ matrix.board }}-v${{ steps.version.outputs.version }}-${{ matrix.flavor }}"
+          cargo objcopy -p ${{ matrix.board }} --release --target ${{ matrix.target }} -- -O binary "${out}.bin"
+          cp "target/${{ matrix.target }}/release/${{ matrix.board }}" "${out}.elf"
+      - name: Build and extract (trace)
+        if: matrix.flavor == 'trace'
+        run: |
+          set -euo pipefail
+          cargo build -p ${{ matrix.board }} --release --target ${{ matrix.target }} --features trace
+          out="${{ matrix.board }}-v${{ steps.version.outputs.version }}-${{ matrix.flavor }}"
+          cargo objcopy -p ${{ matrix.board }} --release --target ${{ matrix.target }} --features trace -- -O binary "${out}.bin"
+          cp "target/${{ matrix.target }}/release/${{ matrix.board }}" "${out}.elf"
+      - name: Verify artifacts are non-empty
+        run: |
+          set -euo pipefail
+          out="${{ matrix.board }}-v${{ steps.version.outputs.version }}-${{ matrix.flavor }}"
+          test -s "${out}.bin"
+          test -s "${out}.elf"
+      - name: Checksum artifacts
+        run: |
+          set -euo pipefail
+          out="${{ matrix.board }}-v${{ steps.version.outputs.version }}-${{ matrix.flavor }}"
+          sha256sum "${out}.bin" > "${out}.bin.sha256"
+          sha256sum "${out}.elf" > "${out}.elf.sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.board }}-${{ matrix.flavor }}
+          path: |
+            ${{ matrix.board }}-v${{ steps.version.outputs.version }}-${{ matrix.flavor }}.bin
+            ${{ matrix.board }}-v${{ steps.version.outputs.version }}-${{ matrix.flavor }}.elf
+            ${{ matrix.board }}-v${{ steps.version.outputs.version }}-${{ matrix.flavor }}.bin.sha256
+            ${{ matrix.board }}-v${{ steps.version.outputs.version }}-${{ matrix.flavor }}.elf.sha256
+          if-no-files-found: error
