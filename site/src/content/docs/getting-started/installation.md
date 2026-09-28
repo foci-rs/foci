@@ -185,10 +185,10 @@ project's self-hosted index, places the loader shim in the right
 `klippy/extras` (or `klippy/plugins`) directory, and registers it with
 Moonraker's `update_manager` so it keeps itself updated going forward.
 
-Add the diagnostics and/or tuning extras if you need them:
+Add the diagnostics extra if you need it:
 
 ```sh
-curl -sL https://raw.githubusercontent.com/mjonuschat/foci/main/install.sh | bash -s -- --diagnostics --tuning
+curl -sL https://raw.githubusercontent.com/mjonuschat/foci/main/install.sh | bash -s -- --diagnostics
 ```
 
 Restart the Klipper service after installing. `FIRMWARE_RESTART` only resets

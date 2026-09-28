@@ -56,9 +56,9 @@ teardown() { rm -rf "$TEST_DIR"; }
 }
 
 @test "foci_bootstrap consumes --version and does not forward it" {
-  run foci_bootstrap --version v0.2.0 --tuning
+  run foci_bootstrap --version v0.2.0 --force
   [ "$status" -eq 0 ]
-  grep -q -- '--tuning' "$TEST_DIR/exec.log"
+  grep -q -- '--force' "$TEST_DIR/exec.log"
   ! grep -q -- '--version' "$TEST_DIR/exec.log"
 }
 
