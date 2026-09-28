@@ -22,12 +22,14 @@ def is_prerelease(version: str) -> bool:
     """Return True if `version` carries a SemVer pre-release identifier.
 
     SemVer marks a pre-release with a hyphen before the identifier
-    (MAJOR.MINOR.PATCH-identifier). A build-metadata suffix ("+...") does
-    not make a version a pre-release on its own, so only the hyphen is
-    checked.
+    (MAJOR.MINOR.PATCH-identifier), checked before any build-metadata
+    suffix. Build metadata ("+...") is stripped first because it may itself
+    contain a hyphen (e.g. "0.3.1+build-meta") without making the version a
+    pre-release.
     """
 
-    return "-" in version
+    core = version.split("+", 1)[0]
+    return "-" in core
 
 
 def main(argv: list[str] | None = None) -> int:

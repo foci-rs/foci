@@ -31,3 +31,11 @@ def test_main_prints_release_for_plain_tag(capsys) -> None:
     exit_code = release_version.main(["--tag", "v0.4.0"])
     assert exit_code == 0
     assert capsys.readouterr().out.strip() == "release"
+
+
+def test_is_prerelease_false_for_build_metadata_with_hyphen() -> None:
+    assert release_version.is_prerelease("0.3.1+build-meta") is False
+
+
+def test_is_prerelease_true_for_rc_with_build_metadata() -> None:
+    assert release_version.is_prerelease("0.3.1-rc.1+build-meta") is True
