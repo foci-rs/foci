@@ -49,7 +49,7 @@ encoder_ppr:
 #pid_velocity_i:
 #pid_velocity_limit:
 #   Outer position/velocity loop gains, 0 to 32767 each
-#   (pid_velocity_limit up to 65535). Written automatically by
+#   (pid_velocity_limit up to 2147483647). Written automatically by
 #   FOCI_AUTOTUNE. Set all four PID fields together if overriding
 #   manually.
 #torque_filter_hz:
