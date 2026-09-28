@@ -46,6 +46,7 @@ export default defineConfig({
           ],
         },
         { label: 'Config Reference', slug: 'config-reference' },
+        { label: 'G-Code Reference', slug: 'gcode-reference' },
         { label: 'Troubleshooting', slug: 'troubleshooting' },
       ],
     }),
