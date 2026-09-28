@@ -40,6 +40,7 @@ export default defineConfig({
           label: 'Getting Started',
           items: [
             { label: 'Installation', slug: 'getting-started/installation' },
+            { label: 'Configuration', slug: 'getting-started/configuration' },
             { label: 'Bring-up', slug: 'getting-started/bring-up' },
           ],
         },

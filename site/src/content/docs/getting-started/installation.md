@@ -199,4 +199,5 @@ extra needs the full service restart:
 sudo systemctl restart klipper
 ```
 
-Continue with [Bring-up](/getting-started/bring-up/) to commission the board.
+Continue with [Configuration](/getting-started/configuration/) to add the
+board to `printer.cfg`.
