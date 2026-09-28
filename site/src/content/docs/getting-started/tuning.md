@@ -85,3 +85,82 @@ cases:
   RESTART
   FOCI_AUTOTUNE STEPPER=<stepper>
   ```
+
+## Validate the result
+
+`FOCI_AUTOTUNE` checks how each motor responds on its own. It does not
+run print-like paths, so a `SUCCEEDED` result doesn't prove your printer
+moves well at the speeds and accelerations you actually print at. Check
+that before trusting it.
+
+The new gains are live but not saved yet: `FOCI_AUTOTUNE` stages them
+for `SAVE_CONFIG`. Validate first. If the result is bad, `RESTART`
+discards the staged gains and you're back to where you started.
+
+:::caution
+The toolhead moves at full print speed during these tests. Clear the
+bed, keep a hand on emergency stop, either `M112` or your printer's
+physical switch, and watch the first move of each step.
+:::
+
+### 1. Full-speed moves, both directions
+
+Home, then run full-travel moves on each axis at your print speed, in
+both directions. Repeat each move several times, back and forth:
+
+```gcode
+G28
+G90
+G1 X<min> F<speed, mm/min>
+G1 X<max> F<speed, mm/min>
+G1 Y<min> F<speed, mm/min>
+G1 Y<max> F<speed, mm/min>
+```
+
+On CoreXY, also run diagonal moves, from `X<min> Y<min>` to
+`X<max> Y<max>` and between the other two corners. Pure X and Y moves
+drive both motors together, but each diagonal is driven by only one
+motor, so a weak axis can hide until you run one.
+
+Step up rather than starting at the target: run everything once at about
+half your speed and acceleration, then at your target, then once at
+10 to 20% above it. The last pass tells you how much margin you have.
+
+### 2. What to look for
+
+- **Sound.** Smooth motion, and quiet when holding position. A
+  buzz at rest, or a tone during moves that wasn't there at half speed,
+  means gains that are too high. See
+  [Troubleshooting](/troubleshooting/).
+- **Endpoints.** The toolhead stops cleanly at each end with no
+  bounce, overshoot, or slow creep into position.
+- **Errors.** No `Timer too close`, stall, or motor-fault messages in the
+  console during any pass. Afterwards, run `DUMP_FOCI STEPPER=<stepper>`,
+  which only reads state, and look for stall or fault flags.
+
+If a pass fails, don't save. Lower the affected gains by 10 to 20%, as
+described under [Manual tuning](/troubleshooting/#manual-tuning), or run
+`FOCI_AUTOTUNE` again with `PROFILE=conservative`.
+
+### 3. Save
+
+Once the moves pass:
+
+```gcode
+SAVE_CONFIG
+```
+
+This restarts Klipper and loads the saved values. If
+buzzing or a loose stop shows up later, after a long print, lower
+`pid_position_p` a little rather than re-tuning.
+
+### 4. Other checks
+
+- **Print a ringing tower** with your usual settings. Look for rounded
+  corners, ringing, and dimension errors.
+- **Re-run input shaper calibration.** Tuning changes axis stiffness,
+  which moves the resonance frequencies. Run `SHAPER_CALIBRATE`, or your
+  usual routine, again and save the new shaper values.
+- **Re-tune after mechanical changes.** Run `FOCI_AUTOTUNE` again after
+  changing belts or belt tension, toolhead weight, `run_current`, or the
+  motor.
