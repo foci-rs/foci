@@ -49,6 +49,49 @@ def test_find_main_push_ci_run_returns_none_when_no_runs() -> None:
     assert run is None
 
 
+def test_find_main_push_ci_run_picks_earliest_when_several_match() -> None:
+    runs = [
+        {
+            "databaseId": 333,
+            "status": "completed",
+            "conclusion": "success",
+            "event": "push",
+            "headBranch": "main",
+            "createdAt": "2026-09-27T12:00:00Z",
+        },
+        {
+            "databaseId": 111,
+            "status": "completed",
+            "conclusion": "success",
+            "event": "push",
+            "headBranch": "main",
+            "createdAt": "2026-09-27T09:00:00Z",
+        },
+    ]
+    fake_gh = lambda *args: _runs_json(runs)  # noqa: E731
+    run = gate.find_main_push_ci_run("mjonuschat/foci", "abc123", gh=fake_gh)
+    assert run is not None
+    assert run["databaseId"] == 111
+
+
+def test_find_main_push_ci_run_raises_value_error_on_malformed_json() -> None:
+    fake_gh = lambda *args: "not json"  # noqa: E731
+    try:
+        gate.find_main_push_ci_run("mjonuschat/foci", "abc123", gh=fake_gh)
+        raise AssertionError("expected ValueError")
+    except ValueError:
+        pass
+
+
+def test_find_main_push_ci_run_raises_value_error_on_unexpected_shape() -> None:
+    fake_gh = lambda *args: json.dumps({"message": "not a list"})  # noqa: E731
+    try:
+        gate.find_main_push_ci_run("mjonuschat/foci", "abc123", gh=fake_gh)
+        raise AssertionError("expected ValueError")
+    except ValueError:
+        pass
+
+
 def test_wait_for_conclusion_returns_immediately_when_completed() -> None:
     fake_gh = lambda *args: json.dumps({"status": "completed", "conclusion": "success"})  # noqa: E731
     sleeps: list[float] = []
@@ -120,6 +163,16 @@ def test_main_exits_nonzero_when_no_matching_run_found(monkeypatch, capsys) -> N
 def test_main_exits_nonzero_when_gh_command_fails(monkeypatch, capsys) -> None:
     def fake_find(*args, **kwargs):
         raise subprocess.CalledProcessError(returncode=1, cmd=["gh", "run", "list"])
+
+    monkeypatch.setattr(gate, "find_main_push_ci_run", fake_find)
+    exit_code = gate.main(["--repo", "mjonuschat/foci", "--sha", "abc123"])
+    assert exit_code == 1
+    assert "FAIL" in capsys.readouterr().out
+
+
+def test_main_exits_nonzero_when_gh_returns_malformed_json(monkeypatch, capsys) -> None:
+    def fake_find(*args, **kwargs):
+        raise ValueError("gh run list returned invalid JSON")
 
     monkeypatch.setattr(gate, "find_main_push_ci_run", fake_find)
     exit_code = gate.main(["--repo", "mjonuschat/foci", "--sha", "abc123"])

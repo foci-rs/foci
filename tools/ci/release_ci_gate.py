@@ -51,15 +51,28 @@ def find_main_push_ci_run(
         "--workflow",
         workflow,
         "--json",
-        "databaseId,status,conclusion,event,headBranch",
+        "databaseId,status,conclusion,event,headBranch,createdAt",
         "--limit",
         "20",
     )
-    runs = json.loads(raw)
-    for run in runs:
-        if run.get("event") == "push" and run.get("headBranch") == "main":
-            return run
-    return None
+    try:
+        runs = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"gh run list returned invalid JSON: {exc}") from exc
+    if not isinstance(runs, list):
+        raise ValueError(f"gh run list returned an unexpected JSON shape: {runs!r}")
+    matches = [
+        run
+        for run in runs
+        if isinstance(run, dict) and run.get("event") == "push" and run.get("headBranch") == "main"
+    ]
+    if not matches:
+        return None
+    # Several main-push CI runs can exist for the same SHA (e.g. a retried
+    # push); the earliest one is the run the release runbook actually
+    # waited on, so it is the one this gate trusts.
+    matches.sort(key=lambda run: run.get("createdAt") or "")
+    return matches[0]
 
 
 def wait_for_conclusion(
@@ -79,7 +92,12 @@ def wait_for_conclusion(
     elapsed = 0
     while True:
         raw = gh("run", "view", run_id, "--repo", repo, "--json", "status,conclusion")
-        run = json.loads(raw)
+        try:
+            run = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"gh run view returned invalid JSON: {exc}") from exc
+        if not isinstance(run, dict):
+            raise ValueError(f"gh run view returned an unexpected JSON shape: {run!r}")
         if run.get("status") == "completed":
             return run.get("conclusion") or ""
         if elapsed >= timeout_seconds:
@@ -116,6 +134,9 @@ def main(argv: list[str] | None = None) -> int:
         )
     except subprocess.CalledProcessError as exc:
         print(f"FAIL: gh command failed: {exc}")
+        return 1
+    except ValueError as exc:
+        print(f"FAIL: {exc}")
         return 1
     except TimeoutError as exc:
         print(f"FAIL: {exc}")
