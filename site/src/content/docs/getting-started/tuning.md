@@ -52,7 +52,7 @@ command homes itself as part of the run.
 A successful run reports:
 
 ```text
-FOCI_AUTOTUNE stepper_x: SUCCEEDED — tuned (velocity_p=755, velocity_i=256, position_p=199).
+FOCI_AUTOTUNE stepper_x: SUCCEEDED, tuned (velocity_p=755, velocity_i=256, position_p=199).
 ```
 
 Repeat for the other axis. Any other result falls into one of four

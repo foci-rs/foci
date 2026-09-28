@@ -24,7 +24,7 @@ Checks board and wiring health, independent of motor tuning. A passing run:
   Encoder direction .................. PASS
   R-model evidence ................... PASS
   L control-model evidence ........... PASS
-FOCI_SELFTEST stepper_x: SUCCEEDED — all 8 stages passed.
+FOCI_SELFTEST stepper_x: SUCCEEDED, all 8 stages passed.
 ```
 
 Stage reference:
@@ -49,7 +49,7 @@ Defaults to the `balanced` profile. Pass `PROFILE=conservative` or
 `PROFILE=stiff` to change it.
 
 ```text
-FOCI_SETUP stepper_x: SUCCEEDED — resistance/inductance identified, current gains applied.
+FOCI_SETUP stepper_x: SUCCEEDED, resistance/inductance identified, current gains applied.
 ```
 
 ### Warnings
