@@ -42,6 +42,7 @@ export default defineConfig({
             { label: 'Installation', slug: 'getting-started/installation' },
             { label: 'Configuration', slug: 'getting-started/configuration' },
             { label: 'Bring-up', slug: 'getting-started/bring-up' },
+            { label: 'Tuning', slug: 'getting-started/tuning' },
           ],
         },
         { label: 'Config Reference', slug: 'config-reference' },

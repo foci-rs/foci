@@ -95,3 +95,7 @@ G28 X
 ```gcode
 G28 Y
 ```
+
+Each axis moves and homes correctly, but isn't tuned for production
+motion yet. Continue with [Tuning](/getting-started/tuning/) before
+printing.
