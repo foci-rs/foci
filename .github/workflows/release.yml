@@ -79,3 +79,65 @@ jobs:
             ${{ matrix.board }}-v${{ steps.version.outputs.version }}-${{ matrix.flavor }}.bin.sha256
             ${{ matrix.board }}-v${{ steps.version.outputs.version }}-${{ matrix.flavor }}.elf.sha256
           if-no-files-found: error
+
+  publish:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: git-cliff
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verify the tagged commit's CI run on main passed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          sha="$(git rev-list -n 1 "${GITHUB_REF_NAME}")"
+          python tools/ci/release_ci_gate.py --repo "${{ github.repository }}" --sha "$sha"
+      - name: Classify tag as release or prerelease
+        id: classify
+        run: |
+          set -euo pipefail
+          echo "kind=$(python tools/ci/release_version.py --tag "${GITHUB_REF_NAME}")" >> "$GITHUB_OUTPUT"
+      - name: Generate release notes
+        run: git-cliff --config cliff.toml --tag "${GITHUB_REF_NAME}" --output release-notes.md
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Confirm trace and prod builds actually differ
+        run: |
+          set -euo pipefail
+          for board in openffboard-fw ouroboros-fw; do
+            prod_bin="artifacts/${board}-prod/${board}-${GITHUB_REF_NAME}-prod.bin"
+            trace_bin="artifacts/${board}-trace/${board}-${GITHUB_REF_NAME}-trace.bin"
+            if cmp -s "$prod_bin" "$trace_bin"; then
+              echo "FAIL: $board prod and trace binaries are byte-identical (stale build?)"
+              exit 1
+            fi
+          done
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          prerelease_flag=""
+          if [ "${{ steps.classify.outputs.kind }}" = "prerelease" ]; then
+            prerelease_flag="--prerelease"
+          fi
+          gh release create "${GITHUB_REF_NAME}" \
+            --repo "${{ github.repository }}" \
+            --notes-file release-notes.md \
+            $prerelease_flag \
+            artifacts/*/*
