@@ -1,11 +1,11 @@
 {
   "action": {
-    "breakaway_seeded": 7,
+    "velocity_p_tune": 7,
     "amplitude_up": 1,
     "amplitude_down": 2,
-    "robustness_reversal": 9,
-    "integral_resume": 8,
-    "position_tune": 10
+    "velocity_tune_check": 9,
+    "velocity_i_tune": 8,
+    "position_p_tune": 10
   },
   "breakaway": {
     "0": "breakaway_probe",

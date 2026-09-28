@@ -30,10 +30,13 @@ Identifies motor resistance and inductance and applies current gains.
 
 Tunes the outer position/velocity loop. Requires `FOCI_SETUP` to have
 already run. `PROFILE` defaults to `balanced`, `MODE` to `nominal`.
-`ACTION` selects one internal phase directly
-(`breakaway_seeded`, `integral_resume`, `robustness_reversal`,
-`position_tune`) for diagnostic use. Omit it for the normal production
-path, which runs all of them in sequence. See
+`ACTION` runs one phase of the tune on its own, for diagnostic use:
+`velocity_p_tune` (finds the velocity P gain), `velocity_i_tune`
+(replays the velocity integral step against the retained plan, same power
+cycle only), `velocity_tune_check` (reversal and standstill checks on the
+tuned velocity loop), and `position_p_tune` (position P, after a velocity
+tune). Omit it for the normal production path, which runs all of them in
+sequence. See
 [Tuning](/getting-started/tuning/).
 
 #### DUMP_FOCI
