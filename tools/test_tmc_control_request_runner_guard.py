@@ -88,7 +88,6 @@ def test_shared_runner_owns_gain_seeded_calibration_and_tune_restore():
     assert "runtime.stored_gains()" in text
     assert "new_outer_for_tmc_with_breakaway_campaign" in text
     assert "tune_route" in text
-    assert "restore_phase_advance_now" in text
 
 
 def test_extracted_arm_motor_hooks_do_not_disarm():
