@@ -47,7 +47,7 @@ rotation_distance: 40
 # A real endstop is still required by Klipper here. ^PA0 is the
 # endstop on your main MCU; alternatively, wire the switch to
 # Ouroboros' own STOP0 connector and use ouroboros:STOP0 instead. See
-# Bring-up for FOCI's sensorless virtual_endstop option.
+# Sensorless Homing for FOCI's virtual_endstop option.
 endstop_pin: ^PA0
 
 [foci stepper_x]
