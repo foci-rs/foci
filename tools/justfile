@@ -1,0 +1,90 @@
+set shell := ["bash", "-euo", "pipefail", "-c"]
+
+root := justfile_directory() / ".."
+repos := "shared/foci-tmc4671 shared/foci-klipper shared/foci-usb-stm32 shared/foci-firmware boards/openffboard-fw boards/ouroboros-fw"
+pinned := "ankyra shared/foci-tmc4671 shared/foci-klipper shared/foci-usb-stm32 shared/foci-firmware boards/openffboard-fw boards/ouroboros-fw host/klipper-foci host/foci-trace"
+
+default:
+    @just --justfile {{ justfile() }} --list
+
+# level is major, minor or patch. Previews by default; execute=true makes the commits and tags. Never pushes.
+release level execute="false" klipper_tag="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cd "{{ root }}"
+
+    case "{{ level }}" in major|minor|patch) ;; *) echo "error: level must be major, minor or patch" >&2; exit 1 ;; esac
+
+    for repo in . {{ pinned }}; do
+        if [ "$(git -C "$repo" branch --show-current)" != main ]; then
+            echo "error: $repo is not on main" >&2; exit 1
+        fi
+    done
+    for repo in . {{ repos }}; do
+        dirty="$(git -C "$repo" status --porcelain --untracked-files=no | grep -v '^ M \(ankyra\|boards\|shared\|host\)' || true)"
+        if [ -n "$dirty" ]; then
+            echo "error: $repo has uncommitted changes:" >&2; echo "$dirty" >&2; exit 1
+        fi
+    done
+
+    klipper="{{ klipper_tag }}"
+    last="$(git -C host/klipper-foci describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true)"
+    if [ -z "$klipper" ]; then
+        if [ -z "$last" ]; then
+            klipper=0.1.0
+        elif [ "$(git -C host/klipper-foci rev-list --count "$last..HEAD")" = 0 ]; then
+            klipper=""
+        else
+            klipper="$(python3 - "$last" "{{ level }}" <<'PY'
+    import sys
+    major, minor, patch = (int(p) for p in sys.argv[1].lstrip("v").split("."))
+    if sys.argv[2] == "major":
+        major, minor, patch = major + 1, 0, 0
+    elif sys.argv[2] == "minor":
+        minor, patch = minor + 1, 0
+    else:
+        patch += 1
+    print(f"{major}.{minor}.{patch}")
+    PY
+    )"
+        fi
+    fi
+    if [ -n "$klipper" ]; then
+        echo "klipper-foci: ${last:-untagged} -> v$klipper"
+    else
+        echo "klipper-foci: no commits since $last, not tagging"
+    fi
+
+    if [ "{{ execute }}" != true ]; then
+        cargo release version {{ level }} --workspace
+        git checkout -- Cargo.lock
+        echo "preview only; re-run with execute=true to apply"
+        exit 0
+    fi
+
+    cargo release version {{ level }} --workspace --execute --no-confirm
+    version="$(cargo metadata --no-deps --format-version 1 --offline \
+        | python3 -c 'import json,sys; print(next(p["version"] for p in json.load(sys.stdin)["packages"] if p["name"] == "foci-firmware"))')"
+
+    perl -0pi -e 's/(\[workspace\.package\]\n)(version = "[^"]*"\n)?/$1version = "'"$version"'"\n/' Cargo.toml
+    cargo metadata --format-version 1 --offline >/dev/null
+
+    for repo in {{ repos }}; do
+        if [ -n "$(git -C "$repo" status --porcelain --untracked-files=no)" ]; then
+            git -C "$repo" add -u
+            git -C "$repo" commit -q -m "chore(release): Bump $(basename "$repo") to $version" \
+                -m "Bump the crate versions in lockstep with the FOCI workspace release."
+        fi
+    done
+
+    git-cliff -o CHANGELOG.md --tag "v$version"
+    git add Cargo.toml Cargo.lock CHANGELOG.md {{ pinned }}
+    git commit -q -m "chore(release): Bump the workspace to $version" \
+        -m "Record the $version state: the submodule pins, Cargo.lock, the changelog and the workspace version are brought to match that release."
+    git tag -a "v$version" -m "v$version"
+
+    if [ -n "$klipper" ]; then
+        git -C host/klipper-foci tag -a "v$klipper" -m "v$klipper"
+    fi
+
+    echo "released v$version${klipper:+ (klipper-foci v$klipper)} locally; push the tags and branches yourself"
