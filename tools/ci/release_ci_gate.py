@@ -110,7 +110,7 @@ def wait_for_conclusion(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo", required=True, help="owner/repo, e.g. mjonuschat/foci")
+    parser.add_argument("--repo", required=True, help="owner/repo, e.g. foci-rs/foci")
     parser.add_argument("--sha", required=True, help="Commit SHA the release tag points at")
     parser.add_argument("--workflow", default="CI", help="Workflow name to check (default: CI)")
     parser.add_argument(
