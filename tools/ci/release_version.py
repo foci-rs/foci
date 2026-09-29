@@ -1,6 +1,6 @@
 """Classify a release tag/version as a normal release or a pre-release.
 
-A tag such as v0.3.1-rc1 carries a SemVer pre-release identifier and must
+A tag such as v0.3.1-rc.1 carries a SemVer pre-release identifier and must
 never become the repository's "Latest" release; a plain vX.Y.Z tag is a
 normal release. This one-line classification decides whether
 `gh release create` gets `--prerelease`.
@@ -13,7 +13,7 @@ import sys
 
 
 def parse_tag(tag: str) -> str:
-    """Strip a leading "v" from a release tag, e.g. "v0.3.1-rc1" -> "0.3.1-rc1"."""
+    """Strip a leading "v" from a release tag, e.g. "v0.3.1-rc.1" -> "0.3.1-rc.1"."""
 
     return tag[1:] if tag.startswith("v") else tag
 
@@ -34,7 +34,7 @@ def is_prerelease(version: str) -> bool:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--tag", required=True, help="Release tag, e.g. v0.3.1-rc1")
+    parser.add_argument("--tag", required=True, help="Release tag, e.g. v0.3.1-rc.1")
     args = parser.parse_args(argv)
     version = parse_tag(args.tag)
     print("prerelease" if is_prerelease(version) else "release")

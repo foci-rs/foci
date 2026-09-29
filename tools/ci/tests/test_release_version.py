@@ -6,7 +6,7 @@ import release_version
 
 
 def test_is_prerelease_true_for_hyphenated_version() -> None:
-    assert release_version.is_prerelease("0.3.1-rc1") is True
+    assert release_version.is_prerelease("0.3.1-rc.1") is True
 
 
 def test_is_prerelease_false_for_plain_version() -> None:
@@ -14,7 +14,7 @@ def test_is_prerelease_false_for_plain_version() -> None:
 
 
 def test_parse_tag_strips_leading_v() -> None:
-    assert release_version.parse_tag("v0.3.1-rc1") == "0.3.1-rc1"
+    assert release_version.parse_tag("v0.3.1-rc.1") == "0.3.1-rc.1"
 
 
 def test_parse_tag_leaves_unprefixed_version_unchanged() -> None:
@@ -22,7 +22,7 @@ def test_parse_tag_leaves_unprefixed_version_unchanged() -> None:
 
 
 def test_main_prints_prerelease_for_rc_tag(capsys) -> None:
-    exit_code = release_version.main(["--tag", "v0.3.1-rc1"])
+    exit_code = release_version.main(["--tag", "v0.3.1-rc.1"])
     assert exit_code == 0
     assert capsys.readouterr().out.strip() == "prerelease"
 
