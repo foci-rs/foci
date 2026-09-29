@@ -107,7 +107,7 @@ make -j4
 ## 2. Downloading and flashing the firmware
 
 FOCI release builds are published as GitHub Release assets on
-[`mjonuschat/foci`](https://github.com/mjonuschat/foci/releases), named
+[`foci-rs/foci`](https://github.com/foci-rs/foci/releases), named
 `ouroboros-fw-v<version>-<flavor>.bin` (`<flavor>` is `prod` for normal use,
 `trace` only when you specifically need the USB trace-capture stream for
 diagnostics).
@@ -123,15 +123,15 @@ On the Pi:
 1. Look up the latest release's version tag:
 
    ```sh
-   FOCI_VERSION=$(curl -s https://api.github.com/repos/mjonuschat/foci/releases/latest \
+   FOCI_VERSION=$(curl -s https://api.github.com/repos/foci-rs/foci/releases/latest \
      | grep -Po '"tag_name": *"v\K[^"]+')
    ```
 
 2. Download the firmware binary and its checksum, then verify it:
 
    ```sh
-   curl -LO "https://github.com/mjonuschat/foci/releases/download/v${FOCI_VERSION}/ouroboros-fw-v${FOCI_VERSION}-prod.bin"
-   curl -LO "https://github.com/mjonuschat/foci/releases/download/v${FOCI_VERSION}/ouroboros-fw-v${FOCI_VERSION}-prod.bin.sha256"
+   curl -LO "https://github.com/foci-rs/foci/releases/download/v${FOCI_VERSION}/ouroboros-fw-v${FOCI_VERSION}-prod.bin"
+   curl -LO "https://github.com/foci-rs/foci/releases/download/v${FOCI_VERSION}/ouroboros-fw-v${FOCI_VERSION}-prod.bin.sha256"
 
    sha256sum -c "ouroboros-fw-v${FOCI_VERSION}-prod.bin.sha256"
    ```
@@ -177,7 +177,7 @@ FOCI needs a small Python module (`klipper-foci`) installed into Klipper's
 printer's Pi:
 
 ```sh
-curl -sL https://raw.githubusercontent.com/mjonuschat/foci/main/install.sh | bash
+curl -sL https://raw.githubusercontent.com/foci-rs/foci/main/install.sh | bash
 ```
 
 This detects Kalico vs. mainline Klipper, installs the package from the
@@ -188,7 +188,7 @@ Moonraker's `update_manager` so it keeps itself updated going forward.
 Add the diagnostics extra if you need it:
 
 ```sh
-curl -sL https://raw.githubusercontent.com/mjonuschat/foci/main/install.sh | bash -s -- --diagnostics
+curl -sL https://raw.githubusercontent.com/foci-rs/foci/main/install.sh | bash -s -- --diagnostics
 ```
 
 Restart the Klipper service after installing. `FIRMWARE_RESTART` only resets
