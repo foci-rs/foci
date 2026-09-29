@@ -28,7 +28,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: stable
+          toolchain: 1.98.1
           targets: ${{ matrix.target }}
           components: llvm-tools-preview
       - uses: Swatinem/rust-cache@v2

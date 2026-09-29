@@ -23,7 +23,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: stable
+          toolchain: 1.98.1
           targets: thumbv7em-none-eabi, thumbv7em-none-eabihf
           components: clippy, rustfmt, llvm-tools-preview
       - uses: Swatinem/rust-cache@v2
