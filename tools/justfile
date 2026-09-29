@@ -39,6 +39,14 @@ release level execute="false":
     version="$(cargo metadata --no-deps --format-version 1 --offline \
         | python3 -c 'import json,sys; print(next(p["version"] for p in json.load(sys.stdin)["packages"] if p["name"] == "foci-firmware"))')"
 
+    for repo in . host/klipper-foci; do
+        if git -C "$repo" rev-parse -q --verify "refs/tags/v$version" >/dev/null; then
+            git checkout -- Cargo.toml Cargo.lock
+            for crate_repo in {{ repos }}; do git -C "$crate_repo" checkout -- .; done
+            echo "error: $repo already has tag v$version; nothing was committed" >&2; exit 1
+        fi
+    done
+
     perl -0pi -e 's/(\[workspace\.package\]\n)(version = "[^"]*"\n)?/$1version = "'"$version"'"\n/' Cargo.toml
     cargo metadata --format-version 1 --offline >/dev/null
 
