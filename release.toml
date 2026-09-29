@@ -4,4 +4,3 @@ tag-name = "v{{version}}"
 allow-branch = ["main"]
 publish = false
 push = false
-pre-release-hook = ["git-cliff", "-o", "CHANGELOG.md", "--tag", "v{{version}}"]

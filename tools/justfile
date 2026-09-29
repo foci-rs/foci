@@ -21,7 +21,7 @@ release level execute="false" klipper_tag="":
         fi
     done
     for repo in . {{ repos }}; do
-        dirty="$(git -C "$repo" status --porcelain --untracked-files=no | grep -v '^ M \(ankyra\|boards\|shared\|host\)' || true)"
+        dirty="$(git -C "$repo" status --porcelain --untracked-files=no | grep -v -e '^ M \(ankyra\|boards\|shared\|host\)' -e '^ M Cargo.lock$' || true)"
         if [ -n "$dirty" ]; then
             echo "error: $repo has uncommitted changes:" >&2; echo "$dirty" >&2; exit 1
         fi
@@ -77,14 +77,13 @@ release level execute="false" klipper_tag="":
         fi
     done
 
-    git-cliff -o CHANGELOG.md --tag "v$version"
-    git add Cargo.toml Cargo.lock CHANGELOG.md {{ pinned }}
+    git add Cargo.toml Cargo.lock {{ pinned }}
     git commit -q -m "chore(release): Bump the workspace to $version" \
-        -m "Record the $version state: the submodule pins, Cargo.lock, the changelog and the workspace version are brought to match that release."
+        -m "Record the $version state: the submodule pins, Cargo.lock and the workspace version are brought to match that release."
     git tag -a "v$version" -m "v$version"
 
     if [ -n "$klipper" ]; then
         git -C host/klipper-foci tag -a "v$klipper" -m "v$klipper"
     fi
 
-    echo "released v$version${klipper:+ (klipper-foci v$klipper)} locally; push the tags and branches yourself"
+    echo "released v$version${klipper:+ (klipper-foci v$klipper)} locally"
