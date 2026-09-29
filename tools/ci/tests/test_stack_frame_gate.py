@@ -52,6 +52,39 @@ def test_accepts_an_elf_with_the_trace_only_stack_marker():
     stack_frame_gate.require_trace_artifact(trace_disassembly)
 
 
+def test_accepts_the_trace_only_marker_in_the_bracketed_demangling():
+    trace_label = (
+        "0809ab36 <<foci_firmware::commissioning::CommissioningEngine>::"
+        "emit_integral_terminal_trace::<foci_firmware::commissioning::backend::"
+        "SharedCommissioningBackend<embedded_hal_bus::spi::exclusive::ExclusiveDevice>>::"
+        "{{closure}}>:\n"
+    )
+    trace_disassembly = DISASSEMBLY + trace_label + (" 809ab36: b081          sub sp, #0x4\n")
+
+    stack_frame_gate.require_trace_artifact(trace_disassembly)
+
+
+def test_an_optional_budget_is_skipped_when_its_frame_was_inlined():
+    budgets = (
+        stack_frame_gate.FrameBudget("main", "main", 40_000, exact_symbol=True),
+        stack_frame_gate.FrameBudget("inlined", "missing::frame", 1_000, optional=True),
+    )
+
+    measurements = stack_frame_gate.measure_budgets(DISASSEMBLY, budgets)
+
+    assert [(budget.label, measured) for budget, measured in measurements] == [
+        ("main", 36_648),
+        ("inlined", None),
+    ]
+
+
+def test_a_required_budget_still_fails_when_its_frame_is_missing():
+    budgets = (stack_frame_gate.FrameBudget("required", "missing::frame", 1_000),)
+
+    with pytest.raises(ValueError, match="frame not found"):
+        stack_frame_gate.measure_budgets(DISASSEMBLY, budgets)
+
+
 def test_budget_failure_reports_measured_and_allowed_bytes():
     failure = stack_frame_gate.check_budget("main", measured=36_648, maximum=30_000)
 

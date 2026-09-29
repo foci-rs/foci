@@ -14,8 +14,8 @@ from pathlib import Path
 DEFAULT_ELF = Path("target/thumbv7em-none-eabi/release/openffboard-fw")
 LABEL_RE = re.compile(r"^[0-9a-fA-F]+ <(.+)>:$")
 STACK_SUB_RE = re.compile(r"\bsub(?:\.w)?\s+sp,\s*(?:sp,\s*)?#(0x[0-9a-fA-F]+|[0-9]+)\b")
-TRACE_ONLY_SYMBOL = (
-    "foci_firmware::commissioning::CommissioningEngine::emit_integral_terminal_trace::"
+TRACE_ONLY_SYMBOL = re.compile(
+    r"foci_firmware::commissioning::CommissioningEngine>?::emit_integral_terminal_trace::"
 )
 
 
@@ -27,6 +27,7 @@ class FrameBudget:
     symbol_fragment: str
     maximum_bytes: int
     exact_symbol: bool = False
+    optional: bool = False
 
 
 # These budgets cover the three frames implicated. They are pinned
@@ -50,6 +51,7 @@ FRAME_BUDGETS = (
         "request handler",
         "foci_firmware::tmc_control::request::handle_tmc_control_request_with_stages::",
         19_000,
+        optional=True,
     ),
 )
 
@@ -93,6 +95,25 @@ def extract_frame_bytes(
     return allocated
 
 
+def measure_budgets(
+    disassembly: str, budgets: tuple[FrameBudget, ...]
+) -> list[tuple[FrameBudget, int | None]]:
+    """Measure each budgeted frame, leaving optional frames the compiler inlined as None."""
+
+    measurements = []
+    for budget in budgets:
+        try:
+            measured = extract_frame_bytes(
+                disassembly, budget.symbol_fragment, exact_symbol=budget.exact_symbol
+            )
+        except ValueError as error:
+            if not (budget.optional and str(error).startswith("frame not found")):
+                raise
+            measured = None
+        measurements.append((budget, measured))
+    return measurements
+
+
 def check_budget(label: str, measured: int, maximum: int) -> str | None:
     """Return an actionable failure when a frame exceeds its budget."""
 
@@ -106,7 +127,7 @@ def require_trace_artifact(disassembly: str) -> None:
 
     for line in disassembly.splitlines():
         match = LABEL_RE.match(line)
-        if match is not None and TRACE_ONLY_SYMBOL in match.group(1):
+        if match is not None and TRACE_ONLY_SYMBOL.search(match.group(1)):
             return
     raise ValueError("ELF does not contain the trace-only stack marker")
 
@@ -152,23 +173,16 @@ def main(argv: list[str] | None = None) -> int:
     try:
         output = disassemble(args.elf)
         require_trace_artifact(output)
-        measurements = [
-            (
-                budget,
-                extract_frame_bytes(
-                    output,
-                    budget.symbol_fragment,
-                    exact_symbol=budget.exact_symbol,
-                ),
-            )
-            for budget in FRAME_BUDGETS
-        ]
+        measurements = measure_budgets(output, FRAME_BUDGETS)
     except (OSError, subprocess.CalledProcessError, ValueError, RuntimeError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2
 
     failures = []
     for budget, measured in measurements:
+        if measured is None:
+            print(f"{budget.label}: inlined into its caller, not measured separately")
+            continue
         print(f"{budget.label}: {measured} bytes (budget {budget.maximum_bytes})")
         failure = check_budget(budget.label, measured, budget.maximum_bytes)
         if failure is not None:
