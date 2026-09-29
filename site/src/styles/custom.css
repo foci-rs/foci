@@ -6,6 +6,8 @@
  * defaults.
  */
 :root {
+	--sl-font: 'Nunito';
+	--sl-font-mono: 'Fira Code';
 	--sl-color-accent-low: #123c1c;
 	--sl-color-accent: #39ff5c;
 	--sl-color-accent-high: #a9ffbc;
@@ -31,4 +33,8 @@
 	--sl-color-black: #f7f7f4;
 	--sl-color-bg-nav: #ececea;
 	--sl-color-bg-sidebar: #ececea;
+}
+
+.site-title {
+	font-weight: 800;
 }

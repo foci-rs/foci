@@ -33,7 +33,15 @@ export default defineConfig({
           },
         },
       ],
-      customCss: ['./src/styles/custom.css'],
+      customCss: [
+        '@fontsource/nunito/latin-400.css',
+        '@fontsource/nunito/latin-400-italic.css',
+        '@fontsource/nunito/latin-600.css',
+        '@fontsource/nunito/latin-700.css',
+        '@fontsource/nunito/latin-800.css',        '@fontsource/fira-code/latin-400.css',
+        '@fontsource/fira-code/latin-500.css',
+        './src/styles/custom.css',
+      ],
       sidebar: [
         { label: 'Home', link: '/' },
         {
