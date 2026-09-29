@@ -11,6 +11,7 @@
 	--sl-color-accent-low: #123c1c;
 	--sl-color-accent: #39ff5c;
 	--sl-color-accent-high: #a9ffbc;
+	--sl-color-text: #b8bec8;
 	--sl-color-text-accent: #39ff5c;
 	--sl-color-white: #f7f7f4;
 	--sl-color-gray-1: #d1d5db;
@@ -22,6 +23,7 @@
 }
 
 :root[data-theme='light'] {
+	--sl-color-text: var(--sl-color-gray-2);
 	--sl-color-accent-low: #d3f6dc;
 	--sl-color-accent: #1ec947;
 	--sl-color-accent-high: #0d6b21;
@@ -37,4 +39,12 @@
 
 .site-title {
 	font-weight: 800;
+}
+
+.sidebar-content a:not([aria-current='page']):not(:hover) {
+	color: var(--sl-color-text);
+}
+
+.right-sidebar-panel a:not([aria-current='true']):not(:hover) {
+	color: var(--sl-color-text);
 }
