@@ -76,7 +76,8 @@ accept 10-10000.
 `FOCI_SET_CURRENT STEPPER=<name> RUN_CURRENT=<amps>`
 
 Sets run current live, for bring-up testing. Not persisted. `RUN_CURRENT` is
-in amps, above 0 up to 5.0.
+in amps, above 0 up to the board's limit (10 A on the Ouroboros, 20 A
+on the OpenFFBoard). Higher values return an error.
 
 #### FOCI_SET_VELOCITY_FEEDFORWARD
 

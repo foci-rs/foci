@@ -13,7 +13,9 @@ must match an existing Klipper stepper section, for example
 ```
 [foci stepper_x]
 run_current:
-#   Run current in amps. Must be provided.
+#   Run current in amps. Must be provided. Must not exceed the board's
+#   limit (10 A on the Ouroboros, 20 A on the OpenFFBoard); a higher
+#   value is a config error at startup.
 encoder_ppr:
 #   Encoder pulses per revolution. Must be provided.
 #voltage_limit: 16000
