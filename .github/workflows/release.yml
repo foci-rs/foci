@@ -17,9 +17,16 @@ jobs:
         include:
           - board: openffboard-fw
             target: thumbv7em-none-eabi
+            flavor: prod
+          - board: openffboard-fw
+            target: thumbv7em-none-eabi
+            flavor: trace
           - board: ouroboros-fw
             target: thumbv7em-none-eabihf
-        flavor: [prod, trace]
+            flavor: prod
+          - board: ouroboros-fw
+            target: thumbv7em-none-eabihf
+            flavor: trace
     steps:
       - uses: actions/checkout@v6
         with:
@@ -131,6 +138,12 @@ jobs:
           for board in openffboard-fw ouroboros-fw; do
             prod_bin="artifacts/${board}-prod/${board}-${GITHUB_REF_NAME}-prod.bin"
             trace_bin="artifacts/${board}-trace/${board}-${GITHUB_REF_NAME}-trace.bin"
+            for bin in "$prod_bin" "$trace_bin"; do
+              if [ ! -s "$bin" ]; then
+                echo "FAIL: $bin is missing or empty"
+                exit 1
+              fi
+            done
             if cmp -s "$prod_bin" "$trace_bin"; then
               echo "FAIL: $board prod and trace binaries are byte-identical (stale build?)"
               exit 1
