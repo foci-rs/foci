@@ -1,9 +1,10 @@
 ---
 title: FOCI
-description: Field Oriented Control Interface — Klipper-compatible MCU firmware for TMC4671 FOC servo controllers.
+description: Smoother, quieter motion for Klipper. Field-oriented servo control for stepper motors with encoders, on TMC4671 boards.
 template: splash
 hero:
-  tagline: Field Oriented Control Interface
+  title: Smoother, quieter motion for Klipper.
+  tagline: FOCI runs field-oriented control on a TMC4671, so a stepper motor with an encoder runs as a closed-loop servo. Klipper still plans the moves.
   image:
     file: ../../assets/foci-icon.svg
   actions:
@@ -11,6 +12,105 @@ hero:
       link: /getting-started/installation/
       icon: right-arrow
       variant: primary
+    - text: View on GitHub
+      link: https://github.com/foci-rs/foci
+      icon: external
+      variant: minimal
 ---
 
-Rust · TMC4671 · Klipper
+import { Card, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
+
+## What FOCI does
+
+A standard stepper driver counts steps and hopes the rotor followed. FOCI reads
+the motor's encoder and regulates the phase currents against the rotor's actual
+position, many thousands of times per second, on the MCU itself. The result is
+smoother, quieter motion and an axis that knows where it is.
+
+FOCI is firmware for the board plus a small Python module for Klipper and
+Kalico. Klipper's planner, G-code and macros work as they always have.
+
+<CardGrid>
+  <Card title="Smooth and quiet" icon="star">
+    Each coil gets regulated current instead of open-loop microstep tables, so
+    the motor runs smoothly and quietly.
+  </Card>
+  <Card title="Klipper and Kalico compatible" icon="puzzle">
+    The board speaks Klipper's MCU protocol. Steppers, kinematics and macros
+    stay in your existing `printer.cfg`.
+  </Card>
+  <Card title="Commissions itself" icon="setting">
+    `FOCI_SELFTEST` checks wiring and encoder, `FOCI_SETUP` identifies the
+    motor's resistance and inductance, and `FOCI_AUTOTUNE` measures each axis
+    and computes its control gains. No hand-tuning.
+  </Card>
+  <Card title="Sensorless homing" icon="approve-check">
+    Your printer homes by detecting a stall with the motor encoders. No endstop
+    switches required.
+  </Card>
+  <Card title="Control runs on the board" icon="rocket">
+    The control loops run in the firmware, not across a USB link to the host.
+    This allows higher sampling rates, tighter timing and more accurate control
+    than a host alone can deliver.
+  </Card>
+  <Card title="Real-time by design" icon="seti:rust">
+    Written in Rust on the RTIC real-time operating system, with scheduling
+    guarantees. Urgent work always preempts the rest, so timing stays
+    predictable. Rust catches whole classes of memory and concurrency bugs at
+    compile time, before they can reach a motor.
+  </Card>
+</CardGrid>
+
+## Supported hardware
+
+<CardGrid>
+  <Card title="Ouroboros" icon="laptop">
+    [Ouroboros](https://store.isiks.tech/products/ouroboros) drives two motors
+    from one board, with up to 15 A peak per motor. An STM32H723 runs the
+    firmware.
+  </Card>
+  <Card title="OpenFFBoard" icon="laptop">
+    [OpenFFBoard](https://github.com/Ultrawipf/OpenFFBoard) is an open source
+    motor controller with a TMC4671. It drives one motor, and an STM32F407 runs
+    the firmware.
+  </Card>
+</CardGrid>
+
+## Up and running
+
+<Steps>
+
+1. **Flash the firmware.** Load Katapult once, then flash FOCI through it.
+2. **Configure Klipper.** Add the `klipper-foci` module and a `[foci <stepper>]`
+   section with your run current and encoder resolution.
+3. **Bring up and tune.** Self-test the wiring, run `FOCI_SETUP` to identify the
+   motor, then let `FOCI_AUTOTUNE` tune each axis.
+
+</Steps>
+
+<LinkCard
+  title="Start with the installation guide"
+  description="From a bare board to a tuned axis."
+  href="/getting-started/installation/"
+/>
+
+## Status
+
+FOCI is alpha software. The implementation, commands, features and API can
+change. Source and issues are on [GitHub](https://github.com/foci-rs/foci).
+
+:::caution[Use at your own risk]
+This software controls real motion hardware. Improper configuration, electrical
+faults, or software bugs can cause sudden or uncontrolled motion, property
+damage, or injury.
+
+The authors provide this software as-is, without warranty of any kind, express
+or implied. In no event shall the authors be liable for any damages, including
+but not limited to property damage, data loss, or personal injury, arising from
+the use or inability to use this software.
+
+You are responsible for ensuring your installation is electrically safe,
+correctly wired, and compliant with local regulations. Keep clear of moving
+parts, and never leave an energized machine unattended without an independent
+way to cut motor power, such as an emergency stop.
+:::
