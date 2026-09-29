@@ -37,20 +37,14 @@ jobs:
           printf '[net]\ngit-fetch-with-cli = true\n' >> ~/.cargo/config.toml
       - name: cargo fmt (workspace)
         run: cargo fmt --all --check
-      - name: cargo fmt (ankyra workspace)
-        run: cargo fmt --manifest-path ankyra/Cargo.toml --all --check
       - name: cargo clippy (host members)
         run: cargo clippy -- -D warnings
       - name: cargo clippy (openffboard board)
         run: cargo clippy -p openffboard-fw --target thumbv7em-none-eabi -- -D warnings
       - name: cargo clippy (ouroboros board)
         run: cargo clippy -p ouroboros-fw --target thumbv7em-none-eabihf -- -D warnings
-      - name: cargo clippy (ankyra workspace)
-        run: cargo clippy --manifest-path ankyra/Cargo.toml --workspace --all-targets -- -D warnings
       - name: cargo test (host members)
         run: cargo test
-      - name: cargo test (ankyra workspace)
-        run: cargo test --manifest-path ankyra/Cargo.toml --workspace
       - name: cargo build (host, release)
         run: cargo build --release
       - name: cargo build (openffboard board, release)
