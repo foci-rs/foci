@@ -28,7 +28,7 @@ default-members = [
 version = "0.3.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/mjonuschat/foci"
+repository = "https://github.com/foci-rs/foci"
 
 [workspace.dependencies]
 defmt = "1.0"

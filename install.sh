@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # foci/install.sh — bootstrap entry point for the klipper-foci installer.
-# curl -sL https://raw.githubusercontent.com/mjonuschat/foci/main/install.sh | bash
+# curl -sL https://raw.githubusercontent.com/foci-rs/foci/main/install.sh | bash
 
 foci_bootstrap() {
     local version="" args=()
@@ -16,8 +16,8 @@ foci_bootstrap() {
         esac
     done
 
-    local api_url="https://api.github.com/repos/mjonuschat/klipper-foci/releases/latest"
-    [ -n "$version" ] && api_url="https://api.github.com/repos/mjonuschat/klipper-foci/releases/tags/$version"
+    local api_url="https://api.github.com/repos/foci-rs/klipper-foci/releases/latest"
+    [ -n "$version" ] && api_url="https://api.github.com/repos/foci-rs/klipper-foci/releases/tags/$version"
 
     local release_json
     if ! release_json="$(curl -fsSL "$api_url")"; then

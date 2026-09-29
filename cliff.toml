@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.\n
 """
 body = """
 {%- macro remote_url() -%}
-  https://github.com/mjonuschat/foci
+  https://github.com/foci-rs/foci
 {%- endmacro -%}
 
 {% if version -%}
@@ -29,7 +29,7 @@ body = """
 """
 footer = """
 {%- macro remote_url() -%}
-  https://github.com/mjonuschat/foci
+  https://github.com/foci-rs/foci
 {%- endmacro -%}
 
 {% for release in releases -%}
