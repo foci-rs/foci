@@ -27,7 +27,9 @@ encoder_ppr:
 #   Reduced current in amps used while homing. Optional with a
 #   physical endstop, where omitting it homes at run_current. Required
 #   for sensorless homing. Must be above 0 and at least 0.05 below
-#   run_current.
+#   run_current. Since homing_current must be below run_current, the
+#   board's run current limit bounds it too; a run_current above the
+#   board limit stops Klipper at startup.
 #stall_ceiling_mm: 1.0
 #   Sensorless-homing stall detection. A fixed following-error limit
 #   in mm. Crossing it always counts as a stall, from the first moment
