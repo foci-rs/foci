@@ -38,6 +38,14 @@ cargo check --manifest-path ankyra/Cargo.toml
 
 Pre-1.0; APIs may change without notice. Used in production firmware on the OpenFFBoard test rig but not yet versioned for external consumers.
 
+## Disclaimer
+
+This software controls real motion hardware. Improper configuration, electrical faults, or software bugs can cause sudden or uncontrolled motion, property damage, or injury.
+
+Use entirely at your own risk. The authors provide this software as-is, without warranty of any kind, express or implied. In no event shall the authors be liable for any damages, including but not limited to property damage, data loss, or personal injury, arising from the use or inability to use this software.
+
+You are responsible for ensuring your installation is electrically safe, correctly wired, and compliant with local regulations. Keep clear of moving parts, and never leave an energized machine unattended without an independent way to cut motor power, such as an emergency stop.
+
 ## License
 
 MIT OR Apache-2.0 at the orchestrator level. Individual component repos carry their own license — see the table above. Notably, `foci-usb-stm32` is GPL-3.0-or-later and `klipper-foci` is GPL-3.0; consuming the full firmware binary inherits those terms.
