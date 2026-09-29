@@ -62,7 +62,9 @@ ALLOWED_CONSTANT_VALUE_DIFFERENCES = frozenset(
 
 # Capability differences are not generic board topology. Each value is pinned
 # so either board changing its evidence authority fails parity review.
-EXPECTED_CONSTANT_VALUE_DIFFERENCES: dict[str, tuple[object, object]] = {}
+EXPECTED_CONSTANT_VALUE_DIFFERENCES: dict[str, tuple[object, object]] = {
+    "FOCI_MAX_RUN_CURRENT_MA": (20_000, 10_000),
+}
 
 # Constants Ouroboros legitimately omits entirely (not merely a differing
 # value): it has no pins in that reserve category, and Klipper's mcu_identify
