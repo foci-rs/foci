@@ -127,9 +127,11 @@ On the Pi:
      | grep -Po '"tag_name": *"v\K[^"]+')
    ```
 
-2. Download the firmware binary and its checksum, then verify it:
+2. Download the firmware binary and its checksum into your home directory
+   (the flash step below reads it from there), then verify it:
 
    ```sh
+   cd ~
    curl -LO "https://github.com/foci-rs/foci/releases/download/v${FOCI_VERSION}/ouroboros-fw-v${FOCI_VERSION}-prod.bin"
    curl -LO "https://github.com/foci-rs/foci/releases/download/v${FOCI_VERSION}/ouroboros-fw-v${FOCI_VERSION}-prod.bin.sha256"
 
@@ -185,15 +187,9 @@ project's self-hosted index, places the loader shim in the right
 `klippy/extras` (or `klippy/plugins`) directory, and registers it with
 Moonraker's `update_manager` so it keeps itself updated going forward.
 
-Add the diagnostics extra if you need it:
-
-```sh
-curl -sL https://raw.githubusercontent.com/foci-rs/foci/main/install.sh | bash -s -- --diagnostics
-```
-
 Restart the Klipper service after installing. `FIRMWARE_RESTART` only resets
 the MCU; it does not reload Klipper's Python modules. A newly installed
-extra needs the full service restart:
+module needs the full service restart:
 
 ```sh
 sudo systemctl restart klipper
