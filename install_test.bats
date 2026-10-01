@@ -89,3 +89,9 @@ teardown() { rm -rf "$TEST_DIR"; }
   [[ "$output" == *"GitHub API"* ]]
   [ ! -f "$TEST_DIR/exec.log" ]
 }
+
+@test "piping install.sh into bash runs the bootstrap and forwards args" {
+  run env -u BATS_TEST_FILENAME bash -c "cat $BATS_TEST_DIRNAME/install.sh | bash -s -- --diagnostics"
+  [ "$status" -eq 0 ]
+  grep -q 'exec:bash .*installer.sh --diagnostics' "$TEST_DIR/exec.log"
+}

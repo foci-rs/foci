@@ -45,7 +45,8 @@ foci_bootstrap() {
     exec bash "$installer_path" "${args[@]}"
 }
 
-# Not sourced under bats: invoke directly when run standalone.
-if [ "${BATS_TEST_FILENAME:-}" = "" ] && [ "${BASH_SOURCE[0]}" = "${0}" ]; then
+# Not sourced under bats: invoke directly when run standalone. When piped
+# into bash (curl | bash) BASH_SOURCE[0] is empty, so fall back to $0.
+if [ "${BATS_TEST_FILENAME:-}" = "" ] && [ "${BASH_SOURCE[0]:-$0}" = "${0}" ]; then
     foci_bootstrap "$@"
 fi
