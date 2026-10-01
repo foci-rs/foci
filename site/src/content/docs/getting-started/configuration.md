@@ -51,8 +51,9 @@ rotation_distance: 40
 endstop_pin: ^PA0
 
 [foci stepper_x]
-run_current: 1.0
+run_current: 2.3
 encoder_ppr: 1000
+...
 
 [stepper_y]
 step_pin: ouroboros:STEP1
@@ -66,9 +67,16 @@ rotation_distance: 40
 endstop_pin: ^PA1
 
 [foci stepper_y]
-run_current: 1.0
+run_current: 2.3
 encoder_ppr: 1000
+...
 ```
+
+The `...` marks where the rest of the standard Klipper settings go. Klipper
+still requires the usual axis settings in each `[stepper_x]`/`[stepper_y]`
+section, such as `position_endstop`, `position_max`, `homing_speed`, and
+`homing_retract_dist`. Set them for your machine as you would for any other
+stepper.
 
 :::note[Keeping your existing physical endstops]
 Changing `endstop_pin` is only necessary if you want to move a switch onto
