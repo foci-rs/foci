@@ -84,8 +84,9 @@ REQUIRED = {
     "action": {"ident", "wire_code", "label", "doc"},
 }
 EXPECTED_RESERVED = {
-    "phase": [0, 9, 10, 11, 12, 13, 14, 15, 22, 23, 24, 25],
-    "action": [0, 3, 4, 5, 6],
+    "phase": [0, 9, 10, 11, 12, 13, 14, 15, 20, 22, 23, 24, 25],
+    "action": [0, 1, 2, 3, 4, 5, 6],
+    "workflow_shape": [1, 2],
 }
 
 # Enum-level docs (fixed generator text, verbatim from the current source).
@@ -232,11 +233,6 @@ def emit_klipper(m: dict) -> str:
     o += [f"    {json.dumps(e['label'])}: {e['wire_code']},\n" for e in m["action"]]
     o += ["}\n\n"]
     o += [f"{e['const_stem']} = {e['wire_code']}\n" for e in m["workflow_shape"]]
-    o += [
-        "\nWORKFLOW_SHAPE_TO_AMPLITUDE_ORDER: dict[int, int] = {\n",
-        "    SHAPE_FIXED_GAIN_AMPLITUDE_ASCENDING: 1,\n",
-        "    SHAPE_FIXED_GAIN_AMPLITUDE_DESCENDING: 2,\n}\n",
-    ]
     return "".join(o)
 
 

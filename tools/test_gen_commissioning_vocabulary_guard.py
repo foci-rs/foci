@@ -54,6 +54,41 @@ def test_reserved_phase_code_rejected():
     )
 
 
+def _replace_code(m, group, code, entry):
+    m[group] = [e for e in m[group] if e["wire_code"] != code]
+    m[group].append(entry)
+
+
+def test_retired_action_code_rejected():
+    _bad(
+        lambda m: _replace_code(
+            m, "action", 1, {"ident": "X", "wire_code": 1, "label": "x", "doc": "d"}
+        )
+    )
+
+
+def test_retired_workflow_shape_code_rejected():
+    _bad(
+        lambda m: _replace_code(
+            m,
+            "workflow_shape",
+            1,
+            {"ident": "X", "wire_code": 1, "const_stem": "SHAPE_X", "doc": "d"},
+        )
+    )
+
+
+def test_retired_phase_code_rejected():
+    _bad(
+        lambda m: _replace_code(
+            m,
+            "phase",
+            20,
+            {"ident": "X", "wire_code": 20, "label": "x", "trace_ident": "X", "doc": "d"},
+        )
+    )
+
+
 def test_missing_reserved_table_rejected():
     _bad(lambda m: m.pop("reserved"))
 

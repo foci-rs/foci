@@ -1,8 +1,6 @@
 {
   "action": {
     "velocity_p_tune": 7,
-    "amplitude_up": 1,
-    "amplitude_down": 2,
     "velocity_tune_check": 9,
     "velocity_i_tune": 8,
     "position_p_tune": 10
@@ -36,10 +34,6 @@
     "2": {
       "label": "Coil check",
       "trace_ident": "CoilCheck"
-    },
-    "20": {
-      "label": "Fixed-gain amplitude validation",
-      "trace_ident": "FixedGainAmplitudeValidation"
     },
     "21": {
       "label": "Verifying gain under reversal/standstill",
