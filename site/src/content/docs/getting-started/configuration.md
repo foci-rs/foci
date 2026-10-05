@@ -40,7 +40,7 @@ reversed, rather than trying to swap the pin names.
 [stepper_x]
 step_pin: ouroboros:STEP0
 dir_pin: ouroboros:DIR0
-enable_pin: !ouroboros:ENA0
+enable_pin: ouroboros:ENA0
 microsteps: 16
 full_steps_per_rotation: 200
 rotation_distance: 40
@@ -58,7 +58,7 @@ encoder_ppr: 1000
 [stepper_y]
 step_pin: ouroboros:STEP1
 dir_pin: ouroboros:DIR1
-enable_pin: !ouroboros:ENA1
+enable_pin: ouroboros:ENA1
 microsteps: 16
 full_steps_per_rotation: 200
 rotation_distance: 40
